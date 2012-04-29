@@ -8,12 +8,15 @@ var faceplateOptions = {
 	scope: 'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
 };
 var fbId = '100003794911765';
+
+
+
 var Twit = require('twit');
 var T = new Twit({
     consumer_key:         'NmCRPoeyNoV3xGyck5jeIA'
-  , consumer_secret:      'F3IkEmtrNCGfH5E3858MU7BOforCKxTK5TESOD0Zs'
-  , access_token:         '566262754-OG3H23OMQCauPJAfXjmQS8JVwVOzvvcRwZHX6Hom'
-  , access_token_secret:  '8ZxYxglKfZwJ0oe90UU02qXXLlglEcJNQ7vClZbYQ'
+    , consumer_secret:      'F3IkEmtrNCGfH5E3858MU7BOforCKxTK5TESOD0Zs'
+    , access_token:         '566262754-OG3H23OMQCauPJAfXjmQS8JVwVOzvvcRwZHX6Hom'
+    , access_token_secret:  '8ZxYxglKfZwJ0oe90UU02qXXLlglEcJNQ7vClZbYQ'
 });
 
 function fbPostMessage(msg) {
@@ -43,9 +46,10 @@ function facebook(callback) {
 	});
 }
 
-function twitterPostMessage(msg) {
+function twitterPostMessage(msg, callback) {
 	T.post('statuses/update', { status: msg }, function(err, reply) {
 	  console.log('twitterPostMessage: ' + reply);
+	  callback(reply);
 	});
 }
 

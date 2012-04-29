@@ -10,6 +10,18 @@ var rest = require('restler');
 var appId = '290427237712179';
 var secret = '372ddf9dbff0853030a779f9db26c072';
 
+// var Twit = require('twit');
+// var T = new Twit({
+//     consumer_key:         'NmCRPoeyNoV3xGyck5jeIA'
+//     , consumer_secret:      'F3IkEmtrNCGfH5E3858MU7BOforCKxTK5TESOD0Zs'
+//     , access_token:         '566262754-OG3H23OMQCauPJAfXjmQS8JVwVOzvvcRwZHX6Hom'
+//     , access_token_secret:  '8ZxYxglKfZwJ0oe90UU02qXXLlglEcJNQ7vClZbYQ'
+// });
+// T.post('statuses/update', { status: 'testing' }, function(err, reply) {
+//   console.log('twitterPostMessage: ', err, reply);
+// });
+
+
 // create an express webserver
 var app = express.createServer(
     express.logger(), express.static(__dirname + '/public'), express.bodyParser(), express.cookieParser(),
@@ -100,17 +112,9 @@ function handle_facebook_request(req, res) {
             render_page(req, res);
         });
 
-} else {
-    render_page(req, res);
-}
-}
-
-function do_stuff(req, res) {
-    helper.facebook(function (facebook) {
-        facebook.get('/me/', {}, function (data) {
-            res.send(require('util').inspect(data));
-        });
-    });
+    } else {
+        render_page(req, res);
+    }
 }
 
 //Process user posts and take actions as necessary
@@ -241,18 +245,13 @@ function handle_subscription_update(req, res) {
     res.send();
 }
 
-function testfeed(req, res) {
-    req.facebook.get('/me/feed', {
-        since: '1335714106',
-    }, function (data) {
-        console.log(data);
+function test(req, res) {
+    helper.twitterPostMessage('i am alive again', function (data) {
         res.send(data);
     });
 }
 
 app.get('/', handle_facebook_request);
-app.get('/test', do_stuff);
-
 
 app.get('/start', start_loop);
 app.get('/testpost', function (req, res) {
@@ -356,4 +355,4 @@ $url = $connectURL;
 
 });
 
-app.get('/testfeed', testfeed);
+app.get('/test', test);
