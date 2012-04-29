@@ -261,7 +261,6 @@ function handle_subscription_update(req, res) {
 }
 
 function test(req, res) {
-    
 }
 
 app.get('/', handle_facebook_request);
