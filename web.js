@@ -186,7 +186,7 @@ function handle_subscription_update(req, res) {
     var entry = req.body.entry[0];
     console.log("[facebook hook]", entry);
     posts.setLatestTime(entry.time);
-    req.facebook.get('/me/feed', function(data) {
+    req.facebook.get('/me/feed?access_token='+req.facebook.token, function(data) {
       console.log(data);
     });
   }
