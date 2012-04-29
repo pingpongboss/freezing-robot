@@ -113,20 +113,20 @@ function do_stuff(req, res){
 function processUserPost(postId, text){
   console.log('[processing post] '+postId+': ' + text)
   
-  if (match(text, ['usage'], ['how', 'what'])) {
+  if (helper.match(text, ['usage'], ['how', 'what'])) {
     helper.fbPostComment(postId, 'Using 256 kWh');
-  } else if (match(text, ['hello', 'hi'])) {
+  } else if (helper.match(text, ['hello', 'hi'])) {
     helper.fbPostComment(postId, 'Sup. I am alive.');
-  } else if (match(text, ['close', 'off', 'shutdown', 'shut down'])) {
-    if (match(text, ['refrigerator', 'fridge'])) {
+  } else if (helper.match(text, ['close', 'off', 'shutdown', 'shut down'])) {
+    if (helper.match(text, ['refrigerator', 'fridge'])) {
       helper.fbPostComment(postId, 'Shutting off the refrigerator.');
-    } else if (match(text, ['light'])) {
+    } else if (helper.match(text, ['light'])) {
       helper.fbPostComment(postId, 'Turning off the light.');
     }
-  } else if (match(text, ['open', 'on', 'start'])) {
-    if (match(text, ['refrigerator', 'fridge'])) {
+  } else if (helper.match(text, ['open', 'on', 'start'])) {
+    if (helper.match(text, ['refrigerator', 'fridge'])) {
       helper.fbPostComment(postId, 'Starting the refrigerator.');
-    } else if (match(text, ['light'])) {
+    } else if (helper.match(text, ['light'])) {
       helper.fbPostComment(postId, 'Turning on the light.');
     }
   }
