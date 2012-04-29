@@ -36,7 +36,8 @@ function facebook(callback) {
 	});
 }
 
-function match() {
+function contains() {
+	console.log(arguments);
 	var text = arguments[0].toUpperCase();
 	for (var i = 1; i < arguments.length; i++) {
 		var filters = arguments[i];
@@ -61,4 +62,4 @@ exports.fbPostMessage = fbPostMessage;
 exports.fbPostComment = fbPostComment;
 exports.facebook = facebook;
 exports.faceplateOptions = faceplateOptions;
-exports.match = match;
+exports.contains = contains;
