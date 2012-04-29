@@ -36,7 +36,29 @@ function facebook(callback) {
 	});
 }
 
+function match() {
+	var text = arguments[0].toUpperCase();
+	for (var i = 1; i < arguments.length; i++) {
+		var filters = arguments[i];
+		var found = false;
+		for (var j = 0; j < filters.length; j++) {
+			var filter = filters[j].toUpperCase();
+			if (text.indexOf(filter) != -1) {
+				found = true;
+				break;
+			}
+		};
+		
+		if (!found) {
+			return false;
+		}
+	};
+	
+	return true;
+}
+
 exports.fbPostMessage = fbPostMessage;
 exports.fbPostComment = fbPostComment;
 exports.facebook = facebook;
 exports.faceplateOptions = faceplateOptions;
+exports.match = match;

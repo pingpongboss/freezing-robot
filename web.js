@@ -112,17 +112,23 @@ function do_stuff(req, res){
 //Process user posts and take actions as necessary
 function processUserPost(postId, text){
   console.log('[processing post] '+postId+': ' + text)
-  switch (text)
-  {
-    case 'How is my usage?': 
-      helper.fbPostComment(postId, 'Using 256 kWh');
-      break;
-    case 'hello': 
-      helper.fbPostComment(postId, 'I am here');
-      break;
-
-    default:  
-       //nothing
+  
+  if (match(text, ['usage'], ['how', 'what'])) {
+    helper.fbPostComment(postId, 'Using 256 kWh');
+  } else if (match(text, ['hello', 'hi'])) {
+    helper.fbPostComment(postId, 'Sup. I am alive.');
+  } else if (match(text, ['close', 'off', 'shutdown', 'shut down'])) {
+    if (match(text, ['refrigerator', 'fridge'])) {
+      helper.fbPostComment(postId, 'Shutting off the refrigerator.');
+    } else if (match(text, ['light'])) {
+      helper.fbPostComment(postId, 'Turning off the light.');
+    }
+  } else if (match(text, ['open', 'on', 'start'])) {
+    if (match(text, ['refrigerator', 'fridge'])) {
+      helper.fbPostComment(postId, 'Starting the refrigerator.');
+    } else if (match(text, ['light'])) {
+      helper.fbPostComment(postId, 'Turning on the light.');
+    }
   }
 }
 
