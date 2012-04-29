@@ -3,6 +3,7 @@ var express = require('express');
 var util = require('util');
 var helper = require('./helper.js');
 var posts = require('./jm-firebase.js').posts();
+var tendrils = require('./jm-firebase.js').tendrils();
 var rest = require('restler');
 
 
@@ -139,7 +140,10 @@ function processUserPost(postId, text) {
         if (helper.contains(text, ['refrigerator', 'fridge'])) {
             helper.fbPostComment(postId, 'Shutting off the refrigerator.');
         } else if (helper.contains(text, ['light'])) {
-            helper.fbPostComment(postId, 'Turning off the light.');
+            helper.manageLight(false, function (data) {
+                console.log(data);
+                helper.fbPostComment(postId, 'Turning off the light.');
+            });
         } else if (helper.contains(text, ['therm', 'temp'])) {
             var newTemp = text.match(/\d+/);
             var to = '';
@@ -154,7 +158,10 @@ function processUserPost(postId, text) {
         if (helper.contains(text, ['refrigerator', 'fridge'])) {
             helper.fbPostComment(postId, 'Starting the refrigerator.');
         } else if (helper.contains(text, ['light'])) {
-            helper.fbPostComment(postId, 'Turning on the light.');
+            helper.manageLight(true, function (data) {
+                console.log(data);
+                helper.fbPostComment(postId, 'Turning on the light.');
+            });
         } else if (helper.contains(text, ['therm', 'temp'])) {
             var newTemp = text.match(/\d+/);
             var to = '';
@@ -259,14 +266,12 @@ function test(req, res) {
         'https://dev.tendrilinc.com/connect/device-action'
         , null
         , data
-        , req
         , function (data) {
             // parse XML
             var requestId = data.match(/requestId=".+"/)[0].split('"')[1];
             
             helper.tendrilGet('https://dev.tendrilinc.com/connect/device-action/'+requestId
                 , null
-                , req
                 , function (data) {
                     res.send(data);
                 });
@@ -306,12 +311,52 @@ var authorize_url = 'https://dev.tendrilinc.com/oauth/authorize';
 var access_token_url = 'https://dev.tendrilinc.com/oauth/access_token';
 var callback_url = '/tendril/callback';
 var another_callback_url = '/tendril/another_callback';
+var extendedPermissions = 'account billing consumption';
 
 app.get('/tendril/another_callback', function (req, res) {
     var url = connect_url + '/connect/user/current-user';
-
-    helper.tendrilGet(url, null, req, function (data) {
+    helper.tendrilGet(url, null, function (data) {
         res.send(data);
+    });
+});
+
+function refreshAccessToken(cb){
+    var url = access_token_url;
+ 
+    var data = {
+       'grant_type'      : 'refresh_token',
+       'refresh_token'   : req.session.refresh_token,
+       'scope'           : extendedPermissions
+   };
+
+    helper.tendrilGet(url, data, function (data) {
+        var date = new Date();
+        var expires_time = new Date(date.getTime() + parseInt(data.expires_in)*1000);      
+        tendrils.addRefreshToken(data.refresh_token);
+        tendrils.addAccessToken(data.access_token, expires_time);
+
+        cb(data, expires_time);
+        
+        res.send();
+    });
+}
+
+app.get('/tendril/refresh', function(req,res){
+    refreshAccessToken(function(data, expires_time){
+       
+        req.session.access_token = data.access_token;
+        req.session.expires_in = data.expires_in;
+
+        req.session.expires_time = expires_time;
+
+        req.session.token_type = data.token_type;      
+        req.session.refresh_token = data.refresh_token;
+
+
+        req.session.scope = data.scope;
+        req.session.loggedin = true;
+
+        res.redirect('http://' + req.headers['host'] + another_callback_url, 303);
     });
 });
 
@@ -319,6 +364,7 @@ app.get('/tendril/callback', function (req, res) {
     if (!req.query.code) {
         res.send('No code!');
     }
+    
 
     req.session.code = req.query.code;
     req.session.check_state = req.query.state;
@@ -333,48 +379,35 @@ app.get('/tendril/callback', function (req, res) {
         client_secret: app_secret
     }
     
-    helper.tendrilGet(url, data, req, function (data) {
+    helper.tendrilGet(url, data, function (data) {
         req.session.access_token = data.access_token;
-        req.session.token_type = data.token_type;
         req.session.expires_in = data.expires_in;
-        req.session.refresh_token = data.refresh_token;
-        req.session.scope = data.scope;
-
-        req.session.loggedin = true;
 
         var date = new Date();
-        var expires_time = date + parseInt(data.expires_in);
+        var expires_time = new Date(date.getTime() + parseInt(data.expires_in)*1000);
 
         req.session.expires_time = expires_time;
 
+        tendrils.addAccessToken(data.access_token, expires_time);
+
+        req.session.token_type = data.token_type;
+        
+        req.session.refresh_token = data.refresh_token;
+
+        tendrils.addRefreshToken(data.refresh_token);
+
+        req.session.scope = data.scope;
+
+        req.session.loggedin = true;
+        
         res.redirect('http://' + req.headers['host'] + another_callback_url, 303);
     });
 });
 
 app.get('/tendril/auth', function (req, res) {
-
-
-    var extendedPermissions = 'account billing consumption';
     req.session.authorize_state = generate_uid();
-
     var auth_url = authorize_url + '?response_type=code' + '&client_id=' + app_key + '&redirect_uri=' + 'http://' + req.headers['host'] + callback_url + '&scope=' + extendedPermissions + '&state=' + req.session.authorize_state;
-
     res.redirect(auth_url);
-
-    /*
-$url = $connectURL;
-  $url .= '/oauth/authorize';
-  $url .= '?response_type=code';
-  $url .= '&client_id=' . $client_id;
-  $url .= '&redirect_uri=' . $callbackURL;
-  $url .= '&scope=' . $extendedPermissions;
-  $_SESSION['authorize_state'] = md5(uniqid(mt_rand(), true));
-  $url .= '&state=' . $_SESSION['authorize_state'];
-  header("Location: $url", true, 303);*/
-
-
-
-
 });
 
 app.get('/test', test);
