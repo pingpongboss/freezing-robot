@@ -3,7 +3,7 @@ var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
 
-var firebase = require('./lib/firebase-node');
+var firebase = require('./firebase-node');
 
 // create an express webserver
 var app = express.createServer(
@@ -13,6 +13,7 @@ var app = express.createServer(
   express.cookieParser(),
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
+
   require('./lib/faceplate').middleware({
       extend_access_token: true,
     app_id: process.env.FACEBOOK_APP_ID || '301282389949117',
