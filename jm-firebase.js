@@ -72,7 +72,7 @@ var posts = function(){
 	}
 	
 	this.isPostOld = function(post, callback) {
-		ref.child('old').once(post.id, function (snapshot) {
+		ref.child('old').child(post.id).once('value', function (snapshot) {
 			var exists = (snapshot.val() !== null);
 			callback(post, exists);
 		});
