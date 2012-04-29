@@ -186,11 +186,18 @@ function handle_subscription_update(req, res) {
     var entry = req.body.entry[0];
     console.log("[facebook hook]", entry);
     posts.setLatestTime(entry.time);
-    req.facebook.get('/me/feed?access_token='+req.facebook.token, function(data) {
+    req.facebook.get('/me/feed', function(data) {
       console.log(data);
     });
   }
   res.send();
+}
+
+function testfeed(req, res) {
+  req.facebook.get('/me/feed', function(data) {
+    console.log(data);
+    res.send(data);
+  });
 }
 
 app.get('/', handle_facebook_request);
@@ -210,3 +217,4 @@ app.get('/testpostback', function(req, res){
 app.post('/', handle_facebook_request);
 app.get('/webhooks/facebook', handle_subscription_verification);
 app.post('/webhooks/facebook', handle_subscription_update);
+app.get('/testfeed', testfeed);
