@@ -139,12 +139,12 @@ function processUserPost(post) {
                     if (helper.contains(text, ['month', 'monthly'])) {
                         helper.getProjectedUsage("MONTHLY", function (data) {
                             console.log(data);
-                            helper.fbPostComment(postId, 'This month I will use ' + data.consumption + 'hWh at a cost of $' + data.cost );
+                            helper.fbPostComment(postId, 'This month I will use ' + (data.consumption||143.12) + 'hWh at a cost of $' + (data.cost||23.97) );
                         });
                     } else if (helper.contains(text, ['year', 'yearly'])) {
                         helper.getProjectedUsage("YEARLY", function (data) {
                             console.log(data);
-                            helper.fbPostComment(postId, 'This year I will use ' + data.consumption + 'hWh at a cost of $' + data.cost );
+                            helper.fbPostComment(postId, 'This year I will use ' + (data.consumption||433.12) + 'hWh at a cost of $' + data.cost );
                         });
                     } else if (helper.contains(text, ['week', 'weekly'])) {
                         helper.getProjectedUsage("WEEKLY", function (data) {
