@@ -261,19 +261,7 @@ function handle_subscription_update(req, res) {
 }
 
 function test(req, res) {
-    helper.facebook(function (facebook) {
-        facebook.get('/me/family', {access_token: 'AAACEdEose0cBAKGdEIecaZCoyLnn6yKJkBQj7lyuUMtmik6UAoUs1VaPANKEhAIRzE3jGVLVtlvBdApM0k6XGbCm39MZB8yZBRPHsu4ZCavIMN2U28jW'}, function (data) {
-            console.log(typeof data, data);
-            for (var i = 0; i < data.length; i++) {
-                var member = data[i];
-                if (member.id === fromId) {
-                    callback(true);
-                    return;
-                }
-            };
-            callback(false);
-        });
-    });
+    
 }
 
 app.get('/', handle_facebook_request);
