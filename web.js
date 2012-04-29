@@ -182,25 +182,32 @@ function handle_subscription_verification(req, res) {
 function handle_subscription_update(req, res) {
   console.log('handle_subscription_update');
   if (req.body && req.body.entry && req.body.entry.length) {
-    console.log(req.body.entry);
     // get the latest
     var entry = req.body.entry[0];
     console.log("[facebook hook]", entry);
-    posts.setLatestTime(entry.time);
-    helper.facebook(function (facebook) {
-      facebook.get('/me/feed', {limit: 2}, function(data) {
-        var latest = data[0];
-        // console.log(latest);
-        // processUserPost(latest.id, latest.message);
+    posts.getLatestTime(function (lastLatestTime) {
+      posts.setLatestTime(entry.time);
+      helper.facebook(function (facebook) {
+        facebook.get('/me/feed', {since: lastLatestTime}, function(data) {
+          for (var i = 0; i < data.length; i++) {
+            var post = data[i];
+            posts.isPostOld(post, function (post, exists) {
+              if (!exists) {
+                posts.setPostOld(post);
+                processUserPost(post.id, post.message);
+              }
+            });
+          };
+        });
       });
     });
   }
   res.send();
 }
 
-function testComment(req, res) {
-  req.facebook.post('//100003794911765_101344303335400/comments', {
-    message: 'test comment2',
+function testfeed(req, res) {
+  req.facebook.get('/me/feed', {
+    since: '1335714106',
   } ,function(data) {
     console.log(data);
     res.send(data);
@@ -224,4 +231,4 @@ app.get('/testpostback', function(req, res){
 app.post('/', handle_facebook_request);
 app.get('/webhooks/facebook', handle_subscription_verification);
 app.post('/webhooks/facebook', handle_subscription_update);
-app.get('/testComment', testComment);
+app.get('/testfeed', testfeed);

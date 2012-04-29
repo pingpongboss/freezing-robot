@@ -63,14 +63,23 @@ var posts = function(){
 		});
 	};
 
-
-
 	this.getLatestTime = function(callback){
 		ref.once('latest', function(snapshot){
 			var val = snapshot.val();
 			var exists = (val !== null);
 			callback(val);
 		});
+	}
+	
+	this.isPostOld = function(post, callback) {
+		ref.child('old').once(post.id, function (snapshot) {
+			var exists = (snapshot.val() !== null);
+			callback(post, exists);
+		});
+	}
+	
+	this.setPostOld = function(post) {
+		ref.child('old').child(post.id).set('true');
 	}
 
     return this;
