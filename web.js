@@ -119,7 +119,9 @@ function handle_facebook_request(req, res) {
 }
 
 //Process user posts and take actions as necessary
-function processUserPost(postId, text) {
+function processUserPost(post) {
+    var postId = post.id;
+    var text = post.message;
     console.log('[processing post] ' + postId + ': ' + text)
 
     if (helper.contains(text, ['hello', 'hi'])) {
@@ -240,7 +242,7 @@ function handle_subscription_update(req, res) {
                         var post = data[i];
                         posts.isPostOld(post, function (post, exists) {
                             if (!exists) {
-                                processUserPost(post.id, post.message);
+                                processUserPost(post);
                                 posts.setPostOld(post);
                             }
                         });

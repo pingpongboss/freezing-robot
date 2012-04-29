@@ -14,10 +14,10 @@ var fbId = '100003794911765';
 
 var Twit = require('twit');
 var T = new Twit({
-    consumer_key:         'NmCRPoeyNoV3xGyck5jeIA'
-    , consumer_secret:      'F3IkEmtrNCGfH5E3858MU7BOforCKxTK5TESOD0Zs'
-    , access_token:         '566262754-OG3H23OMQCauPJAfXjmQS8JVwVOzvvcRwZHX6Hom'
-    , access_token_secret:  '8ZxYxglKfZwJ0oe90UU02qXXLlglEcJNQ7vClZbYQ'
+	consumer_key:         'NmCRPoeyNoV3xGyck5jeIA'
+	, consumer_secret:      'F3IkEmtrNCGfH5E3858MU7BOforCKxTK5TESOD0Zs'
+	, access_token:         '566262754-OG3H23OMQCauPJAfXjmQS8JVwVOzvvcRwZHX6Hom'
+	, access_token_secret:  '8ZxYxglKfZwJ0oe90UU02qXXLlglEcJNQ7vClZbYQ'
 });
 
 function fbPostMessage(msg) {
@@ -49,8 +49,8 @@ function facebook(callback) {
 
 function twitterPostMessage(msg, callback) {
 	T.post('statuses/update', { status: msg }, function(err, reply) {
-	  console.log('twitterPostMessage: ' + reply);
-	  callback(reply);
+		console.log('twitterPostMessage: ' + reply);
+		callback(reply);
 	});
 }
 
@@ -72,16 +72,16 @@ function getAccessToken(cb){
 
 // TODO jamin get rid of req
 function tendrilGet(url, query, callback) {
-    getAccessToken(function(access_token){
+	getAccessToken(function(access_token){
 		var headers = {
-		    'Accept': 'application/json',
-		    'Content-Type': 'application/json',
-		    'Access_Token': access_token
+			'Accept': 'application/json',
+			'Content-Type': 'application/json',
+			'Access_Token': access_token
 		};
 
 		rest.get(url, {
 			query: query,
-		    headers: headers,
+			headers: headers,
 		}).on('complete', function (data) {
 			callback(data);
 		});
@@ -132,28 +132,28 @@ function contains() {
 
 //bool
 function manageLight(on, callback) {
-    var deviceId='804f58aaaaaa0358';
-    var action = on ? 'On' : 'Off';
-    var data = '<?xml version="1.0" encoding="UTF-8"?> \
-    <setVoltDataRequest deviceId="'+deviceId+'" locationId="62" xmlns="http://platform.tendrilinc.com/tnop/extension/ems"> \
-    <data> \
-    <mode>'+action+'</mode> \
-    </data> \
-    </setVoltDataRequest>';
+	var deviceId='804f58aaaaaa0358';
+	var action = on ? 'On' : 'Off';
+	var data = '<?xml version="1.0" encoding="UTF-8"?> \
+	<setVoltDataRequest deviceId="'+deviceId+'" locationId="62" xmlns="http://platform.tendrilinc.com/tnop/extension/ems"> \
+	<data> \
+	<mode>'+action+'</mode> \
+	</data> \
+	</setVoltDataRequest>';
 
-    tendrilPost(
-        'https://dev.tendrilinc.com/connect/device-action'
-        , null
-        , data
-        , function (data) {
+	tendrilPost(
+		'https://dev.tendrilinc.com/connect/device-action'
+		, null
+		, data
+		, function (data) {
             // parse XML
             var requestId = data.match(/requestId=".+"/)[0].split('"')[1];
             
             tendrilGet('https://dev.tendrilinc.com/connect/device-action/'+requestId
-                , null
-                , function (data) {
-                    callback(data);
-                });
+            	, null
+            	, function (data) {
+            		callback(data);
+            	});
         });
 }
 
