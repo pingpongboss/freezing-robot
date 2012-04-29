@@ -289,18 +289,9 @@ var another_callback_url = '/tendril/another_callback';
 app.get('/tendril/another_callback', function (req, res) {
     var url = connect_url + '/connect/user/current-user';
 
-    var headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Access_Token': req.session.access_token
-    };
-
-    rest.get(url, {
-        headers: headers
-    }).on('complete', function (data) {
+    helper.tendrilGet(url, null, req, function (data) {
         res.send(data);
     });
-
 });
 
 app.get('/tendril/callback', function (req, res) {
@@ -313,11 +304,6 @@ app.get('/tendril/callback', function (req, res) {
 
     var url = access_token_url;
 
-    var headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
-
     var data = {
         grant_type: 'authorization_code',
         code: req.session.code,
@@ -325,12 +311,8 @@ app.get('/tendril/callback', function (req, res) {
         client_id: app_key,
         client_secret: app_secret
     }
-
-    rest.get(url, {
-        query: data,
-        headers: headers
-    }).on('complete', function (data) {
-
+    
+    helper.tendrilGet(url, data, req, function (data) {
         req.session.access_token = data.access_token;
         req.session.token_type = data.token_type;
         req.session.expires_in = data.expires_in;
