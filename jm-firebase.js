@@ -16,9 +16,9 @@ var users = function(){
 	console.log("ADDING USER");
 	console.log(fbId);
 	usersRef.child(fbId).transaction(function(data){
-	    if (data === null){
+	    //if (data === null){
 		return {'access_token': access_token}
-	    } 
+	    //} 
 	}, function(success){
 	    if (cb){
 		cb(success);

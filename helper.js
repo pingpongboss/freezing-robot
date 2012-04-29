@@ -4,7 +4,7 @@ function fbPostMessage(msg, req) {
 		'/me/feed',
 		{message: msg},
 		function (data) {
-			console.log('fbPostMessage: ' + data);
+			console.log('fbPostMessage: ', data);
 		});
 }
 
