@@ -180,6 +180,7 @@ function getProjectedUsage(range, callback) {
   var url = "/connect/user/current-user/account/default-account/consumption/" + range + "/projection;source=ACTUAL";
   tendrilGet(url
     , null
+    , false
   	, function (data) {
   		callback(data);
   	});
