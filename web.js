@@ -100,7 +100,7 @@ function handle_facebook_request(req, res) {
 }
 
 
-function do_stuff(){
+function do_stuff(req,res){
   req.facebook.get('/me/', { }, function(data) {
     res.send(require('util').inspect(data));
   });
