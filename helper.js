@@ -6,19 +6,10 @@ var faceplateOptions = {
 	persist_access_token: true,
 	app_id: '290427237712179',
 	secret: '372ddf9dbff0853030a779f9db26c072',
-	scope: 'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
+	scope: 'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream,user_relationships'
 };
 var fbId = '100003794911765';
 
-
-
-var Twit = require('twit');
-var T = new Twit({
-	consumer_key:         'NmCRPoeyNoV3xGyck5jeIA'
-	, consumer_secret:      'F3IkEmtrNCGfH5E3858MU7BOforCKxTK5TESOD0Zs'
-	, access_token:         '566262754-OG3H23OMQCauPJAfXjmQS8JVwVOzvvcRwZHX6Hom'
-	, access_token_secret:  '8ZxYxglKfZwJ0oe90UU02qXXLlglEcJNQ7vClZbYQ'
-});
 
 function fbPostMessage(msg) {
 	facebook(function (facebook) {
@@ -44,6 +35,21 @@ function fbPostComment(post_id, msg) {
 function facebook(callback) {
 	nonbrowser(fbId, function (facebook) {
 		callback(facebook);
+	});
+}
+
+function isFamily (fromId, callback) {
+	facebook(function (facebook) {
+		facebook.get('/me/family', function (data) {
+			for (var i = 0; i < data.length; i++) {
+				var member = data[i];
+				if (member.id === fromId) {
+					callback(true);
+					return;
+				}
+			};
+			callback(false);
+		});
 	});
 }
 
@@ -174,6 +180,7 @@ exports.fbPostMessage = fbPostMessage;
 exports.fbPostComment = fbPostComment;
 exports.facebook = facebook;
 exports.faceplateOptions = faceplateOptions;
+exports.isFamily = isFamily;
 exports.twitterPostMessage = twitterPostMessage;
 exports.tendrilGet = tendrilGet;
 exports.tendrilPostXML = tendrilPostXML;
