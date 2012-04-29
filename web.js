@@ -129,8 +129,28 @@ function processUserPost(post) {
     }
     // querying
     else if (helper.contains(text, ['how', 'what'])) {
-        if (helper.contains(text, ['usage', 'energy'])) {
-            helper.fbPostComment(postId, 'You are currently using 256 kWh.');
+        if (helper.contains(text, ['usage', 'energy', 'using'])) {
+          if (helper.contains(text, ['month', 'monthly'])) {
+            helper.getProjectedUsage("MONTHLY", function (data) {
+              console.log(data);
+              helper.fbPostComment(postId, 'This month I will use ' + data.consumption + 'hWh at a cost of $' + data.cost );
+            });
+          } else if (helper.contains(text, ['year', 'yearly'])) {
+            helper.getProjectedUsage("YEARLY", function (data) {
+              console.log(data);
+              helper.fbPostComment(postId, 'This year I will use ' + data.consumption + 'hWh at a cost of $' + data.cost );
+            });
+          } else if (helper.contains(text, ['week', 'weekly'])) {
+            helper.getProjectedUsage("WEEKLY", function (data) {
+              console.log(data);
+              helper.fbPostComment(postId, 'This week I will use ' + data.consumption + 'hWh at a cost of $' + data.cost );
+            });
+          } else if (helper.contains(text, ['cycle', 'bill'])) {
+            helper.getProjectedUsage("BILL_CYCLE", function (data) {
+              console.log(data);
+              helper.fbPostComment(postId, 'This billing cycle I will use ' + data.consumption + 'hWh at a cost of $' + data.cost );
+            });
+          }
         } else if (helper.contains(text, ['light'])) {
             helper.fbPostComment(postId, '4 out of 7 lights are currently turned on.');
         } else if (helper.contains(text, ['therm', 'temp', 'hot', 'cold'])) {
@@ -264,7 +284,7 @@ function test(req, res) {
     </data> \
     </setVoltDataRequest>';
 
-    helper.tendrilPost(
+    helper.tendrilPostXML(
         'https://dev.tendrilinc.com/connect/device-action'
         , null
         , data

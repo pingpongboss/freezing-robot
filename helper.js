@@ -89,7 +89,7 @@ function tendrilGet(url, query, callback) {
 }
 
 // TODO jamin get rid of req
-function tendrilPost(url, query, data, callback) {
+function tendrilPostXML(url, query, data, callback) {
 	getAccessToken(function(access_token){
 		var headers = {
 			'Accept': 'application/xml',
@@ -141,7 +141,7 @@ function manageLight(on, callback) {
 	</data> \
 	</setVoltDataRequest>';
 
-	tendrilPost(
+	tendrilPostXML(
 		'https://dev.tendrilinc.com/connect/device-action'
 		, null
 		, data
@@ -157,12 +157,26 @@ function manageLight(on, callback) {
         });
 }
 
+
+
+//Valid Ranges: WEEKLY, MONTHLY, YEARLY, or BILL_CYCLE
+function getProjectedUsage(range, callback) {
+  //var url = "/connect/" + user_id + "/account/" + account_id + "/consumption/" + range + "/projection;source=ACTUAL";
+  var url = "/connect/user/current-user/account/default-account/consumption/" + range + "/projection;source=ACTUAL";
+  tendrilGet(url
+    , null
+  	, function (data) {
+  		callback(data);
+  	});
+}
+
 exports.fbPostMessage = fbPostMessage;
 exports.fbPostComment = fbPostComment;
 exports.facebook = facebook;
 exports.faceplateOptions = faceplateOptions;
 exports.twitterPostMessage = twitterPostMessage;
 exports.tendrilGet = tendrilGet;
-exports.tendrilPost = tendrilPost;
+exports.tendrilPostXML = tendrilPostXML;
 exports.manageLight = manageLight;
 exports.contains = contains;
+exports.getProjectedUsage = getProjectedUsage;
