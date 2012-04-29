@@ -2,7 +2,14 @@ var async   = require('async');
 var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
-var firebase = require('./firebase-node');
+var faceplateOptions = {
+    extend_access_token: true,
+    persist_access_token: true,
+    app_id: process.env.FACEBOOK_APP_ID || '301282389949117',
+    secret: process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619',
+    scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
+};
+
 
 var appId = process.env.FACEBOOK_APP_ID || '301282389949117';
 var secret = process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619';
@@ -16,12 +23,8 @@ var app = express.createServer(
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
 
-  require('./lib/faceplate').middleware({
-    app_id: appId,
-    secret: secret,
-    extend_access_token: true,
-    scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
-  })
+
+  require('./lib/faceplate').middleware(faceplateOptions)
     
 );
 
@@ -193,9 +196,21 @@ function handle_subscription_update(req, res) {
   res.send();
 }
 
+// example of how to use it without a browser session
+app.get('/testnonbrowser', function(req,res){
+    var nonbrowser = require('./lib/faceplate').nonbrowser(faceplateOptions);
+    var fbId = '100003794911765';
+    nonbrowser(fbId, function(facebook){
+	facebook.get('/me', {}, function(data){
+	    res.send(data);
+	})
+    });
+});
 
 app.get('/', handle_facebook_request);
 app.get('/test', do_stuff);
+
+
 app.get('/start', start_loop);
 app.get('/testpost', function(req, res){
   helper.fbPostMessage('test test', req);
