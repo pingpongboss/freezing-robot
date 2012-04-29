@@ -113,7 +113,7 @@ function tendrilPostXML(url, query, data, user2, callback) {
 			callback(data);
 		});
 	}
-	, user);
+	, user2);
 }
 
 function contains() {
