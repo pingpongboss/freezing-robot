@@ -124,56 +124,60 @@ function processUserPost(post) {
     var text = post.message;
     var fromId = post.from.id;
     console.log('[processing post] ', postId, text, fromId);
-
-    if (helper.contains(text, ['hello', 'hi'])) {
-        helper.fbPostComment(postId, 'Sup. I am alive.');
-    }
-    // querying
-    else if (helper.contains(text, ['how', 'what'])) {
-        if (helper.contains(text, ['usage', 'energy'])) {
-            helper.fbPostComment(postId, 'You are currently using 256 kWh.');
-        } else if (helper.contains(text, ['light'])) {
-            helper.fbPostComment(postId, '4 out of 7 lights are currently turned on.');
-        } else if (helper.contains(text, ['therm', 'temp', 'hot', 'cold'])) {
-            helper.fbPostComment(postId, 'Thermostat is currently set to 68 degrees.');
-        }
-    }
-    // turn off things
-    else if (helper.contains(text, ['close', 'off', 'shut', 'down', 'lower', 'decrease', 'cool'])) {
-        if (helper.contains(text, ['refrigerator', 'fridge'])) {
-            helper.fbPostComment(postId, 'Shutting off the refrigerator.');
-        } else if (helper.contains(text, ['light'])) {
-            helper.manageLight(false, function (data) {
-                console.log(data);
-                helper.fbPostComment(postId, 'Turning off the light.');
-            });
-        } else if (helper.contains(text, ['therm', 'temp'])) {
-            var newTemp = text.match(/\d+/);
-            var to = '';
-            if (newTemp) {
-                to = ' to ' + newTemp[0] + ' degrees';
+    
+    helper.isFamily(fromId, function (isFamily) {
+        if (isFamily) {
+            if (helper.contains(text, ['hello', 'hi'])) {
+                helper.fbPostComment(postId, 'Sup. I am alive.');
             }
-            helper.fbPostComment(postId, 'Lowering thermostat temperature' + to + '.');
-        }
-    }
-    // turn on things
-    else if (helper.contains(text, ['open', 'on', 'start', 'up', 'increase', 'heat'])) {
-        if (helper.contains(text, ['refrigerator', 'fridge'])) {
-            helper.fbPostComment(postId, 'Starting the refrigerator.');
-        } else if (helper.contains(text, ['light'])) {
-            helper.manageLight(true, function (data) {
-                console.log(data);
-                helper.fbPostComment(postId, 'Turning on the light.');
-            });
-        } else if (helper.contains(text, ['therm', 'temp'])) {
-            var newTemp = text.match(/\d+/);
-            var to = '';
-            if (newTemp) {
-                to = ' to ' + newTemp[0] + ' degrees';
+            // querying
+            else if (helper.contains(text, ['how', 'what'])) {
+                if (helper.contains(text, ['usage', 'energy'])) {
+                    helper.fbPostComment(postId, 'You are currently using 256 kWh.');
+                } else if (helper.contains(text, ['light'])) {
+                    helper.fbPostComment(postId, '4 out of 7 lights are currently turned on.');
+                } else if (helper.contains(text, ['therm', 'temp', 'hot', 'cold'])) {
+                    helper.fbPostComment(postId, 'Thermostat is currently set to 68 degrees.');
+                }
             }
-            helper.fbPostComment(postId, 'Raising thermostat temperature' + to + '.');
+            // turn off things
+            else if (helper.contains(text, ['close', 'off', 'shut', 'down', 'lower', 'decrease', 'cool'])) {
+                if (helper.contains(text, ['refrigerator', 'fridge'])) {
+                    helper.fbPostComment(postId, 'Shutting off the refrigerator.');
+                } else if (helper.contains(text, ['light'])) {
+                    helper.manageLight(false, function (data) {
+                        console.log(data);
+                        helper.fbPostComment(postId, 'Turning off the light.');
+                    });
+                } else if (helper.contains(text, ['therm', 'temp'])) {
+                    var newTemp = text.match(/\d+/);
+                    var to = '';
+                    if (newTemp) {
+                        to = ' to ' + newTemp[0] + ' degrees';
+                    }
+                    helper.fbPostComment(postId, 'Lowering thermostat temperature' + to + '.');
+                }
+            }
+            // turn on things
+            else if (helper.contains(text, ['open', 'on', 'start', 'up', 'increase', 'heat'])) {
+                if (helper.contains(text, ['refrigerator', 'fridge'])) {
+                    helper.fbPostComment(postId, 'Starting the refrigerator.');
+                } else if (helper.contains(text, ['light'])) {
+                    helper.manageLight(true, function (data) {
+                        console.log(data);
+                        helper.fbPostComment(postId, 'Turning on the light.');
+                    });
+                } else if (helper.contains(text, ['therm', 'temp'])) {
+                    var newTemp = text.match(/\d+/);
+                    var to = '';
+                    if (newTemp) {
+                        to = ' to ' + newTemp[0] + ' degrees';
+                    }
+                    helper.fbPostComment(postId, 'Raising thermostat temperature' + to + '.');
+                }
+            }
         }
-    }
+    });
 }
 
 //Process data coming back from Tendril API

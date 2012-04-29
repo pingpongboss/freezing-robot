@@ -47,6 +47,22 @@ function facebook(callback) {
 	});
 }
 
+function isFamily (fromId, callback) {
+	facebook(function (facebook) {
+		facebook.get('/me/family', function (data) {
+			var result = JSON.parse(data);
+			for (var i = 0; i < result.data.length; i++) {
+				var member = result.data[i];
+				if (member.id === fromId) {
+					callback(true);
+					return;
+				}
+			};
+			callback(false);
+		});
+	});
+}
+
 function twitterPostMessage(msg, callback) {
 	T.post('statuses/update', { status: msg }, function(err, reply) {
 		console.log('twitterPostMessage: ' + reply);
@@ -161,6 +177,7 @@ exports.fbPostMessage = fbPostMessage;
 exports.fbPostComment = fbPostComment;
 exports.facebook = facebook;
 exports.faceplateOptions = faceplateOptions;
+exports.isFamily = isFamily;
 exports.twitterPostMessage = twitterPostMessage;
 exports.tendrilGet = tendrilGet;
 exports.tendrilPost = tendrilPost;
