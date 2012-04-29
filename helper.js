@@ -11,15 +11,6 @@ var faceplateOptions = {
 var fbId = '100003794911765';
 
 
-
-var Twit = require('twit');
-var T = new Twit({
-	consumer_key:         'NmCRPoeyNoV3xGyck5jeIA'
-	, consumer_secret:      'F3IkEmtrNCGfH5E3858MU7BOforCKxTK5TESOD0Zs'
-	, access_token:         '566262754-OG3H23OMQCauPJAfXjmQS8JVwVOzvvcRwZHX6Hom'
-	, access_token_secret:  '8ZxYxglKfZwJ0oe90UU02qXXLlglEcJNQ7vClZbYQ'
-});
-
 function fbPostMessage(msg) {
 	facebook(function (facebook) {
 		facebook.post('/me/feed', {

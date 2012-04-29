@@ -298,6 +298,27 @@ var callback_url = '/tendril/callback';
 var another_callback_url = '/tendril/another_callback';
 var extendedPermissions = 'account billing consumption';
 
+// call be called with or without argument
+function getAccessToken(cb, user2){
+    tendrils.getAccessToken(function(access_token){
+	cb(access_token);
+    }, function(){ // weird but should work
+	tendrils.getRefreshToken(function(refresh_token){
+	    refreshAccessToken(refresh_token, function(data, expires_time){
+		if (data){
+		    getAccessToken(cb);
+		}
+		else{
+		    throw("Need to reauth app");
+		}
+	    });
+	});
+    },
+    user2); // set user2=true if want NashKato
+ 
+}
+
+
 app.get('/tendril/another_callback', function (req, res) {
     var url = connect_url + '/connect/user/current-user';
     helper.tendrilGet(url, null, function (data) {
@@ -305,20 +326,73 @@ app.get('/tendril/another_callback', function (req, res) {
     });
 });
 
-function refreshAccessToken(cb){
+tendrilUsers = {
+    NashKato :{
+	username: 'nash.kato@tendril.com',
+	password: 'password'
+    } ,
+    AndrewWood:{
+	username :'andrew.wood@tendril.com',
+	password: 'password'
+    }
+}
+
+function tendrilAuth(user, req, res){ // req, res optional
+    var headers = {
+	'Accept': 'application/json'
+    };
+
+  
+    var data ={
+	'grant_type'    : 'password',
+	'username'     : tendrilUsers[user].username,
+	'password'      : tendrilUsers[user].password,
+	'scope'         : extendedPermissions,
+	'client_id'     : app_key,
+	'client_secret' : app_secret,
+	'route'         : 'sandbox'
+    };
+
+    
+    rest.get(access_token_url, {
+	query : data
+    }).on('complete', 	function(data){
+	    var date = new Date();
+            var expires_time = new Date(date.getTime() + parseInt(data.expires_in)*1000);
+	    
+	    var user2 = (user == "NashKato");
+	    console.log(data.access_token);
+	    tendrils.addAccessToken(data.access_token, expires_time, user2);
+	    tendrils.addRefreshToken(data.refresh_token, user2);
+	if (res){
+	    res.send('Done');
+	}
+	
+	});
+    
+
+
+}
+
+function refreshAccessToken(refresh_token, cb, user2){
     var url = access_token_url;
  
     var data = {
-       'grant_type'      : 'refresh_token',
-       'refresh_token'   : req.session.refresh_token,
-       'scope'           : extendedPermissions
-   };
 
-    helper.tendrilGet(url, data, function (data) {
-        var date = new Date();
+	'grant_type'      : 'refresh_token',
+	'refresh_token'   : refresh_token,
+	'scope'           : extendedPermissions
+    };
+
+    rest.get(url, {
+	query: data,
+	headers: headers
+    }).on('complete', function(data){
+	var date = new Date();
         var expires_time = new Date(date.getTime() + parseInt(data.expires_in)*1000);      
-        tendrils.addRefreshToken(data.refresh_token);
-        tendrils.addAccessToken(data.access_token, expires_time);
+	tendrils.addRefreshToken(data.refresh_token, user2);
+	tendrils.addAccessToken(data.access_token, expires_time, user2);
+
 
         cb(data, expires_time);
         
@@ -327,8 +401,9 @@ function refreshAccessToken(cb){
 }
 
 app.get('/tendril/refresh', function(req,res){
-    refreshAccessToken(function(data, expires_time){
-       
+
+    refreshAccessToken(req.session.refresh_token, function(data, expires_time){
+	
         req.session.access_token = data.access_token;
         req.session.expires_in = data.expires_in;
 
@@ -393,6 +468,11 @@ app.get('/tendril/auth', function (req, res) {
     req.session.authorize_state = generate_uid();
     var auth_url = authorize_url + '?response_type=code' + '&client_id=' + app_key + '&redirect_uri=' + 'http://' + req.headers['host'] + callback_url + '&scope=' + extendedPermissions + '&state=' + req.session.authorize_state;
     res.redirect(auth_url);
+});
+
+app.get('/tendril/auth2', function(req,res){
+    tendrilAuth('NashKato', req, res);
+
 });
 
 app.get('/test', test);
