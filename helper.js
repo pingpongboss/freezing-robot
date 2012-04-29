@@ -119,14 +119,18 @@ function tendrilPostXML(url, query, data, user2, callback) {
 function contains() {
 	console.log('contains args', arguments);
 	var text = arguments[0].toUpperCase();
+	var textArray = text.split(' ');
 	for (var i = 1; i < Object.keys(arguments).length; i++) {
 		var filters = arguments[i];
 		var found = false;
 		for (var j = 0; j < filters.length; j++) {
 			var filter = filters[j].toUpperCase();
-			if (text.indexOf(filter) != -1) {
-				found = true;
-				break;
+			for (var k = 0; k < textArray.length; k++) {
+			    var textArrayElement = textArray[k];
+			    if (textArrayElement === filter) {
+    				found = true;
+    				break;
+    			}
 			}
 		};
 
