@@ -110,15 +110,15 @@ function do_stuff(req, res){
 }
 
 //Process user posts and take actions as necessary
-function processUserPost(text){
-  console.log("[processing post] " + text)
+function processUserPost(postId, text){
+  console.log('[processing post] '+postId+': ' + text)
   switch (text)
   {
     case 'How is my usage?': 
-      helper.fbPostMessage('Using 256 kWh');
+      helper.fbPostComment(postId, 'Using 256 kWh');
       break;
     case 'hello': 
-      helper.fbPostMessage('I am here');
+      helper.fbPostComment(postId, 'I am here');
       break;
 
     default:  
@@ -189,15 +189,17 @@ function handle_subscription_update(req, res) {
     helper.facebook(function (facebook) {
       facebook.get('/me/feed', {limit: 2}, function(data) {
         var latest = data[0];
-        console.log(latest);
+        processUserPost(latest.id, latest.message);
       });
     });
   }
   res.send();
 }
 
-function testfeed(req, res) {
-  req.facebook.get('/me/feed', function(data) {
+function testComment(req, res) {
+  req.facebook.post('//100003794911765_101344303335400/comments', {
+    message: 'test comment2',
+  } ,function(data) {
     console.log(data);
     res.send(data);
   });
@@ -220,4 +222,4 @@ app.get('/testpostback', function(req, res){
 app.post('/', handle_facebook_request);
 app.get('/webhooks/facebook', handle_subscription_verification);
 app.post('/webhooks/facebook', handle_subscription_update);
-app.get('/testfeed', testfeed);
+app.get('/testComment', testComment);
