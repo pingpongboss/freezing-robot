@@ -3,6 +3,10 @@ var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
 
+var rest = require('restler');
+
+
+
 var appId = '290427237712179';
 var secret = '372ddf9dbff0853030a779f9db26c072';
 
@@ -206,3 +210,113 @@ app.get('/testpostback', function(req, res){
 app.post('/', handle_facebook_request);
 app.get('/webhooks/facebook', handle_subscription_verification);
 app.post('/webhooks/facebook', handle_subscription_update);
+
+function generate_uid(){
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+	var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+	return v.toString(16);
+    });
+}
+
+var app_key = 'b258166257d8d16c0ff8005bf6e61aeb';
+var app_secret = '12ac4b5f60df625040f3b6e525604bb5';
+var connect_url = 'https://dev.tendrilinc.com';
+var request_token_url = 'https://dev.tendrilinc.com/oauth/request_token';
+var authorize_url = 'https://dev.tendrilinc.com/oauth/authorize';
+var access_token_url = 'https://dev.tendrilinc.com/oauth/access_token';
+var callback_url = 'http://freezingrobot.herokuapp.com:3000/tendril/callback';
+var another_callback_url = 'http://freezingrobot.herokuapp.com:3000/tendril/another_callback';
+
+app.get('/tendril/another_callback', function(req,res){
+    var url = connect_url +
+	'/connect/user/current-user';
+
+    var headers = {
+	'Accept': 'application/json',
+	'Content-Type': 'application/json',
+	'Access_Token': req.session.access_token
+    };
+
+    rest.get(url, {
+	headers: headers
+    }).on('complete', function(data){
+	res.send(data);
+    });
+
+});
+
+app.get('/tendril/callback', function(req, res){
+    if (!req.query.code){
+	res.send('No code!');
+    }
+
+    req.session.code = req.query.code;
+    req.session.check_state = req.query.state;
+   
+    var url = access_token_url;
+
+    var headers = {
+	'Accept': 'application/json',
+	'Content-Type': 'application/json'
+    }
+
+    var data = {
+	grant_type: 'authorization_code',
+	code      : req.session.code,
+	redirect_uri : another_callback_url,
+	client_id  : app_key,
+	client_secret: app_secret
+    }
+    
+    rest.get(url, {
+	query: data,
+	headers: headers
+    }).on('complete', function(data){
+	
+	req.session.access_token = data.access_token;
+	req.session.token_type = data.token_type;
+	req.session.expires_in = data.expires_in;
+	req.session.refresh_token = data.refresh_token;
+	req.session.scope = data.scope;
+	
+	req.session.loggedin = true;
+	
+	var date = new Date();
+	var expires_time = date + parseInt(data.expires_in);
+	
+	req.session.expires_time = expires_time;
+
+	res.redirect(another_callback_url, 303);
+    });
+});
+
+app.get('/tendril/auth', function(req, res){
+
+
+    var extendedPermissions = 'account billing consumption';
+    req.session.authorize_state = generate_uid();
+    
+    var auth_url = authorize_url + 
+	'?response_type=code' +
+	'&client_id=' + app_key +
+	'&redirect_uri=' + callback_url +
+	'&scope='+ extendedPermissions + 
+	'&state=' + req.session.authorize_state;
+    
+    res.redirect(auth_url);
+
+/*
+$url = $connectURL;
+  $url .= '/oauth/authorize';
+  $url .= '?response_type=code';
+  $url .= '&client_id=' . $client_id;
+  $url .= '&redirect_uri=' . $callbackURL;
+  $url .= '&scope=' . $extendedPermissions;
+  $_SESSION['authorize_state'] = md5(uniqid(mt_rand(), true));
+  $url .= '&state=' . $_SESSION['authorize_state'];
+  header("Location: $url", true, 303);*/
+	
+   
+   
+
+});
