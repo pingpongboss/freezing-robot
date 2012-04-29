@@ -2,6 +2,7 @@ var async   = require('async');
 var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
+var posts    = require('./jm-firebase.js').posts();
 
 var appId = '290427237712179';
 var secret = '372ddf9dbff0853030a779f9db26c072';
@@ -180,11 +181,16 @@ function handle_subscription_verification(req, res) {
 
 function handle_subscription_update(req, res) {
   console.log('handle_subscription_update');
-  if (req.body && req.body.entry) {
-    for (var i = 0; i < req.body.entry.length; i++) {
-      var entry = req.body.entry[i];
-      console.log("[facebook hook]", entry);
-    };
+  if (req.body && req.body.entry && req.body.entry.length) {
+    // get the latest
+    var entry = req.body.entry[0];
+    console.log("[facebook hook]", entry);
+    if (entry.id !== entry.uid) {
+      posts.setLatestTime(entry.time);
+      req.facebook.get('/me/feed', function(data) {
+        console.log(data);
+      });
+    }
   }
   res.send();
 }
