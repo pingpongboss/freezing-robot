@@ -126,6 +126,7 @@ function processUserPost(post) {
     console.log('[processing post] ', postId, text, fromId);
     
     helper.isFamily(fromId, function (isFamily) {
+        console.log('isFamily', isFamily);
         if (isFamily) {
             if (helper.contains(text, ['hello', 'hi'])) {
                 helper.fbPostComment(postId, 'Sup. I am alive.');
