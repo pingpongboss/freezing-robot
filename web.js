@@ -3,7 +3,6 @@ var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
 var posts    = require('./jm-firebase.js').posts();
-
 var rest = require('restler');
 
 
@@ -282,8 +281,8 @@ var connect_url = 'https://dev.tendrilinc.com';
 var request_token_url = 'https://dev.tendrilinc.com/oauth/request_token';
 var authorize_url = 'https://dev.tendrilinc.com/oauth/authorize';
 var access_token_url = 'https://dev.tendrilinc.com/oauth/access_token';
-var callback_url = 'http://freezingrobot.herokuapp.com:3000/tendril/callback';
-var another_callback_url = 'http://freezingrobot.herokuapp.com:3000/tendril/another_callback';
+var callback_url = '/tendril/callback';
+var another_callback_url = '/tendril/another_callback';
 
 app.get('/tendril/another_callback', function(req,res){
     var url = connect_url +
@@ -321,7 +320,7 @@ app.get('/tendril/callback', function(req, res){
     var data = {
 	grant_type: 'authorization_code',
 	code      : req.session.code,
-	redirect_uri : another_callback_url,
+	redirect_uri : 'http://'+req.headers['host']+another_callback_url,
 	client_id  : app_key,
 	client_secret: app_secret
     }
@@ -344,7 +343,7 @@ app.get('/tendril/callback', function(req, res){
 	
 	req.session.expires_time = expires_time;
 
-	res.redirect(another_callback_url, 303);
+	res.redirect('http://'+req.headers['host']+another_callback_url, 303);
     });
 });
 
@@ -357,7 +356,7 @@ app.get('/tendril/auth', function(req, res){
     var auth_url = authorize_url + 
 	'?response_type=code' +
 	'&client_id=' + app_key +
-	'&redirect_uri=' + callback_url +
+	'&redirect_uri=' + 'http://'+req.headers['host']+callback_url +
 	'&scope='+ extendedPermissions + 
 	'&state=' + req.session.authorize_state;
     
