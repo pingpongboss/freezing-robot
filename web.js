@@ -182,6 +182,7 @@ function handle_subscription_verification(req, res) {
 function handle_subscription_update(req, res) {
   console.log('handle_subscription_update');
   if (req.body && req.body.entry && req.body.entry.length) {
+    console.log(req.body.entry);
     // get the latest
     var entry = req.body.entry[0];
     console.log("[facebook hook]", entry);
@@ -189,6 +190,7 @@ function handle_subscription_update(req, res) {
     helper.facebook(function (facebook) {
       facebook.get('/me/feed', {limit: 2}, function(data) {
         var latest = data[0];
+        // console.log(latest);
         // processUserPost(latest.id, latest.message);
       });
     });
