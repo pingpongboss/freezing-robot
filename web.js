@@ -121,7 +121,7 @@ function handle_facebook_request(req, res) {
 //Process user posts and take actions as necessary
 function processUserPost(post) {
     var postId = post.id;
-    var text = post.message;
+    var text = post.message.toUpperCase().replace('MCFRIDGE', '');
     var fromId = post.from.id;
     console.log('[processing post] ', postId, text, fromId);
     
@@ -261,29 +261,6 @@ function handle_subscription_update(req, res) {
 }
 
 function test(req, res) {
-    var deviceId='804f58aaaaaa0358';
-    var action = 'On';
-    var data = '<?xml version="1.0" encoding="UTF-8"?> \
-    <setVoltDataRequest deviceId="'+deviceId+'" locationId="62" xmlns="http://platform.tendrilinc.com/tnop/extension/ems"> \
-    <data> \
-    <mode>'+action+'</mode> \
-    </data> \
-    </setVoltDataRequest>';
-
-    helper.tendrilPost(
-        'https://dev.tendrilinc.com/connect/device-action'
-        , null
-        , data
-        , function (data) {
-            // parse XML
-            var requestId = data.match(/requestId=".+"/)[0].split('"')[1];
-            
-            helper.tendrilGet('https://dev.tendrilinc.com/connect/device-action/'+requestId
-                , null
-                , function (data) {
-                    res.send(data);
-                });
-        });
 }
 
 app.get('/', handle_facebook_request);
