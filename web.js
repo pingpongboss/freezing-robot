@@ -187,7 +187,7 @@ function handle_subscription_update(req, res) {
   if (req.body && req.body.entry) {
     for (var i = 0; i < req.body.entry.length; i++) {
       var entry = req.body.entry[i];
-      console.log('special_id' + entry);
+      console.log(entry);
     };
   }
   res.send();
