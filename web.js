@@ -2,6 +2,10 @@ var async   = require('async');
 var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
+var firebase = require('./firebase-node');
+
+var appId = process.env.FACEBOOK_APP_ID || '301282389949117';
+var secret = process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619';
 
 // create an express webserver
 var app = express.createServer(
@@ -11,11 +15,14 @@ var app = express.createServer(
   express.cookieParser(),
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
+
   require('./lib/faceplate').middleware({
-    app_id: process.env.FACEBOOK_APP_ID || '301282389949117',
-    secret: process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619',
+    app_id: appId,
+    secret: secret,
+    extend_access_token: true,
     scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
   })
+    
 );
 
 // listen to the PORT given to us in the environment
@@ -134,9 +141,10 @@ var timeout = 5 * 1000;
 var counter = 0;
 function main_loop(req) {
   console.log(++counter);
-  helper.fbPostMessage('test ' + counter, req);
   
   // pull data from tendril
+  // decision tree
+  // post to fb wall
   
   setTimeout(function() {main_loop(req)}, timeout);
 }
@@ -146,10 +154,43 @@ function start_loop(req, res){
     res.send('Error: Main loop already started.');
     return;
   }
+    
+  req.facebook.post(
+    '/'+appId+'/subscriptions'
+    ,{
+      object        : 'user',
+      fields        : 'feed',
+      callback_url  : req.headers['host']+'/update',
+      verify_token  : 'test',
+      access_token  : '301282389949117|1HW0Hd79t50X9wx05jbgkf-TO5g'
+    }
+    ,function (data) {
+      console.log(data);
+    });
   
   setTimeout(function() {main_loop(req)}, 0);
   started = true;
   res.send('Success: Main loop started.');
+}
+
+function handle_subscription_verification(req, res) {
+  console.log('handle_subscription_verification');
+  if (req.query['hub.verify_token'] == 'test') {
+    res.send(req.query['hub.challenge']);
+  } else {
+    res.send();
+  }
+}
+
+function handle_subscription_update(req, res) {
+  console.log('handle_subscription_update');
+  if (req.body && req.body.entry) {
+    for (var i = 0; i < req.body.entry.length; i++) {
+      var entry = req.body.entry[i];
+      console.log('special_id' + entry);
+    };
+  }
+  res.send();
 }
 
 
@@ -158,6 +199,7 @@ app.get('/test', do_stuff);
 app.get('/start', start_loop);
 app.get('/testpost', function(req, res){
   helper.fbPostMessage('test test', req);
+  res.send('sent');
 });
 app.get('/testpostback', function(req, res){
   processUserPost(req.query.input, req);
@@ -165,3 +207,5 @@ app.get('/testpostback', function(req, res){
 });
 
 app.post('/', handle_facebook_request);
+app.get('/update', handle_subscription_verification);
+app.post('/update', handle_subscription_update);
