@@ -13,15 +13,20 @@ var tendrils = function(){
     var tendrilsRoot = db.child(TENDRILS_LOCATION);
 
     var ref = tendrilsRoot.child('access_token');
-
     var codeRef = tendrilsRoot.child('code');
+    
+    var nashKatoAt = tendrilsRoot.child('access_token2');
+    var nashKatoCode = tendrilsRoot.child('code2');
 
-    this.addRefreshToken = function(refresh_token){
-	codeRef.set({refresh_token: refresh_token});
+
+    this.addRefreshToken = function(refresh_token, user2){
+	var rt = user2 ? nashKatoCode : codeRef;
+	rt.set({refresh_token: refresh_token});
     };
     
-    this.getRefreshToken = function(success, failure){
-	codeRef.once('value', function(snapshot){
+    this.getRefreshToken = function(success, failure, user2){
+	var rt = user2 ? nashKatoCode : codeRef;
+	rt.once('value', function(snapshot){
 	    var val = snapshot.val();
 	    var exists = (val !== null);
 	    if (exists){
@@ -37,12 +42,14 @@ var tendrils = function(){
     };
 
 
-    this.addAccessToken = function(access_token, expires){
-	ref.set({'access_token': access_token, expires: expires});
+    this.addAccessToken = function(access_token, expires, user2){
+	var at = user2 ? nashKatoAt : ref;
+	at.set({'access_token': access_token, expires: expires});
     };
 
-    this.getAccessToken = function(success, failure){
-	ref.once('value', function(snapshot){
+    this.getAccessToken = function(success, failure, user2){
+	var at = user2 ? nashKatoAt : ref;
+	at.once('value', function(snapshot){
 	    var val = snapshot.val();
 	    var exists = (val !== null);
 	    if (exists){
