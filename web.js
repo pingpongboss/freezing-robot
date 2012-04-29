@@ -19,7 +19,7 @@ var app = express.createServer(
 );
 
 // listen to the PORT given to us in the environment
-var port = 3000;
+var port = process.env.PORT || 3000;
 
 app.listen(port, function() {
   console.log("Listening on " + port);
@@ -188,17 +188,6 @@ function handle_subscription_update(req, res) {
   }
   res.send();
 }
-
-// example of how to use it without a browser session
-app.get('/testnonbrowser', function(req,res){
-  var nonbrowser = require('./lib/faceplate').nonbrowser(helper.faceplateOptions);
-  var fbId = '100003794911765';
-  nonbrowser(fbId, function(facebook){
-   facebook.get('/me', {}, function(data){
-     res.send(data);
-   })
- });
-});
 
 app.get('/', handle_facebook_request);
 app.get('/test', do_stuff);
