@@ -189,7 +189,7 @@ function handle_subscription_update(req, res) {
     helper.facebook(function (facebook) {
       facebook.get('/me/feed', {limit: 2}, function(data) {
         var latest = data[0];
-        processUserPost(latest.id, latest.message);
+        // processUserPost(latest.id, latest.message);
       });
     });
   }
