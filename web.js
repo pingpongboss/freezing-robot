@@ -2,6 +2,8 @@ var async   = require('async');
 var express = require('express');
 var util    = require('util');
 
+var firebase = require('./lib/firebase-node');
+
 // create an express webserver
 var app = express.createServer(
   express.logger(),
@@ -11,10 +13,12 @@ var app = express.createServer(
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
   require('./lib/faceplate').middleware({
+      extend_access_token: true,
     app_id: process.env.FACEBOOK_APP_ID || '301282389949117',
     secret: process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619',
     scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
   })
+    
 );
 
 // listen to the PORT given to us in the environment
