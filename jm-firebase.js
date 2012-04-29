@@ -58,9 +58,7 @@ var posts = function(){
 		console.log("ADDING Latest Time");
 		console.log(time);
 		
-		ref.set({
-			latest 	: time,
-		});
+		ref.child('latest').set(time);
 	};
 
 	this.getLatestTime = function(callback){
