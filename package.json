@@ -13,7 +13,7 @@
     "faye-websocket": ">= 0.4.2",
     "twitter-node": "0.0.2",
     "restler": "2.0.0",
-    "twit": "0.1.3",
+    "twit": "0.1.3"
   },
 
   "engines": {
