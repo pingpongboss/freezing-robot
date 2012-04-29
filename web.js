@@ -2,7 +2,7 @@ var async   = require('async');
 var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
-var firebase = require('./lib/firebase-node');
+var firebase = require('./firebase-node');
 
 var appId = process.env.FACEBOOK_APP_ID || '301282389949117';
 var secret = process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619';
@@ -15,6 +15,7 @@ var app = express.createServer(
   express.cookieParser(),
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
+
   require('./lib/faceplate').middleware({
     app_id: appId,
     secret: secret,
