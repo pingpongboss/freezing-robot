@@ -99,14 +99,36 @@ function handle_facebook_request(req, res) {
   }
 }
 
-
-function do_stuff(req,res){
+function do_stuff(req, res){
   req.facebook.get('/me/', { }, function(data) {
     res.send(require('util').inspect(data));
   });
 }
 
+var started = false;
+var timeout = 5 * 1000;
+var counter = 0;
+function main_loop() {
+  console.log(++counter);
+  
+  // pull data from tendril
+  
+  setTimeout(main_loop, timeout);
+}
+
+function start_loop(req, res){
+  if (started) {
+    res.send('Error: Main loop already started.');
+    return;
+  }
+  
+  setTimeout(main_loop, 0);
+  started = true;
+  res.send('Success: Main loop started.');
+}
+
 
 app.get('/', handle_facebook_request);
 app.get('/test', do_stuff);
+app.get('/start', start_loop);
 app.post('/', handle_facebook_request);
