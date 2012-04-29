@@ -188,7 +188,7 @@ function handle_subscription_update(req, res) {
     posts.getLatestTime(function (lastLatestTime) {
       posts.setLatestTime(entry.time);
       helper.facebook(function (facebook) {
-        facebook.get('/me/feed', {since: lastLatestTime}, function(data) {
+        facebook.get('/me/feed', {since: lastLatestTime, limit: 4}, function(data) {
           for (var i = 0; i < data.length; i++) {
             var post = data[i];
             posts.isPostOld(post, function (post, exists) {
