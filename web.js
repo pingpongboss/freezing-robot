@@ -322,7 +322,7 @@ var another_callback_url = '/tendril/another_callback';
 var extendedPermissions = 'account billing consumption';
 
 // call be called with or without argument
-function getAccessToken(cb){
+function getAccessToken(cb, user2){
     tendrils.getAccessToken(function(access_token){
 	cb(access_token);
     }, function(){ // weird but should work
@@ -336,7 +336,8 @@ function getAccessToken(cb){
 		}
 	    });
 	});
-    });
+    },
+    user2); // set user2=true if want NashKato
  
 }
 
