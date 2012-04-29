@@ -6,7 +6,7 @@ var faceplateOptions = {
 	persist_access_token: true,
 	app_id: '290427237712179',
 	secret: '372ddf9dbff0853030a779f9db26c072',
-	scope: 'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
+	scope: 'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream,user_relationships'
 };
 var fbId = '100003794911765';
 

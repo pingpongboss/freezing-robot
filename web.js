@@ -122,7 +122,8 @@ function handle_facebook_request(req, res) {
 function processUserPost(post) {
     var postId = post.id;
     var text = post.message;
-    console.log('[processing post] ' + postId + ': ' + text)
+    var fromId = post.from.id;
+    console.log('[processing post] ', postId, text, fromId);
 
     if (helper.contains(text, ['hello', 'hi'])) {
         helper.fbPostComment(postId, 'Sup. I am alive.');
