@@ -169,6 +169,8 @@ function handle_subscription_verification(req, res) {
 
 function handle_subscription_update(req, res) {
   console.log('handle_subscription_update');
+  var result = JSON.parse(data);
+  console.log(result);
   res.send();
 }
 
