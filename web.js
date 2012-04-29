@@ -171,8 +171,7 @@ function handle_subscription_verification(req, res) {
 
 function handle_subscription_update(req, res) {
   console.log('handle_subscription_update');
-  console.log(req);
-  var result = JSON.parse(request.body);
+  var result = JSON.parse(req.body);
   console.log(result);
   res.send();
 }
