@@ -163,7 +163,7 @@ function start_loop(req, res){
     ,{
       object        : 'user',
       fields        : 'feed',
-      callback_url  : req.headers['host']+'/update',
+      callback_url  : req.headers['host']+'/webhooks/facebook',
       verify_token  : 'test',
       access_token  : '301282389949117|1HW0Hd79t50X9wx05jbgkf-TO5g'
     }
@@ -190,7 +190,7 @@ function handle_subscription_update(req, res) {
   if (req.body && req.body.entry) {
     for (var i = 0; i < req.body.entry.length; i++) {
       var entry = req.body.entry[i];
-      console.log(entry);
+      console.log("[facebook hook]" + entry);
     };
   }
   res.send();
@@ -222,5 +222,5 @@ app.get('/testpostback', function(req, res){
 });
 
 app.post('/', handle_facebook_request);
-app.get('/update', handle_subscription_verification);
-app.post('/update', handle_subscription_update);
+app.get('/webhooks/facebook', handle_subscription_verification);
+app.post('/webhooks/facebook', handle_subscription_update);
