@@ -113,21 +113,47 @@ function do_stuff(req, res){
 function processUserPost(postId, text){
   console.log('[processing post] '+postId+': ' + text)
   
-  if (helper.match(text, ['usage', 'energy'], ['how', 'what'])) {
-    helper.fbPostComment(postId, 'You are currently using 256 kWh.');
-  } else if (helper.match(text, ['hello', 'hi'])) {
+  if (helper.match(text, ['hello', 'hi'])) {
     helper.fbPostComment(postId, 'Sup. I am alive.');
-  } else if (helper.match(text, ['close', 'off', 'shutdown', 'shut down'])) {
+  }
+  // querying
+  else if (helper.match(text, ['how', 'what'])) {
+    if (helper.match(text, ['usage', 'energy'])) {
+      helper.fbPostComment(postId, 'You are currently using 256 kWh.');
+    } else if (helper.match(text, ['light'])) {
+      helper.fbPostComment(postId, '4 out of 7 lights are currently turned on.');
+    } else if (helper.match(text, ['therm', 'temp', 'hot', 'cold'])) {
+      helper.fbPostComment(postId, 'Thermostat is currently set to 68 degrees.');
+    }
+  }
+  // turn off things
+  else if (helper.match(text, ['close', 'off', 'shut', 'down'])) {
     if (helper.match(text, ['refrigerator', 'fridge'])) {
       helper.fbPostComment(postId, 'Shutting off the refrigerator.');
     } else if (helper.match(text, ['light'])) {
       helper.fbPostComment(postId, 'Turning off the light.');
+    } else if (helper.match(text, ['therm', 'temp'])) {
+      var newTemp = text.match(/\d+/);
+      var to = '';
+      if (newTemp) {
+        to = ' to '+newTemp[0]+' degrees';
+      }
+      helper.fbPostComment(postId, 'Raising thermostat temperature'+to+'.');
     }
-  } else if (helper.match(text, ['open', 'on', 'start'])) {
+  }
+  // turn on things
+  else if (helper.match(text, ['open', 'on', 'start', 'up'])) {
     if (helper.match(text, ['refrigerator', 'fridge'])) {
       helper.fbPostComment(postId, 'Starting the refrigerator.');
     } else if (helper.match(text, ['light'])) {
       helper.fbPostComment(postId, 'Turning on the light.');
+    } else if (helper.match(text, ['therm', 'temp'])) {
+      var newTemp = text.match(/\d+/);
+      var to = '';
+      if (newTemp) {
+        to = ' to '+newTemp[0]+' degrees';
+      }
+      helper.fbPostComment(postId, 'Lowering thermostat temperature'+to+'.');
     }
   }
 }
