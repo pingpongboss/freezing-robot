@@ -94,7 +94,7 @@ function tendrilGet(url, query, user2, callback) {
 			callback(data);
 		});
 	}
-	, user);
+	, user2);
 }
 
 function tendrilPostXML(url, query, data, user2, callback) {
