@@ -10,7 +10,7 @@ var app = express.createServer(
   express.cookieParser(),
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
-  require('faceplate').middleware({
+  require('./lib/faceplate').middleware({
     app_id: process.env.FACEBOOK_APP_ID || '301282389949117',
     secret: process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619',
     scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
@@ -41,7 +41,7 @@ app.dynamicHelpers({
       return '://' + app.dynamicViewHelpers.host(req, res) + path;
     }
   },
-});
+}); 
 
 function render_page(req, res) {
   req.facebook.app(function(app) {
@@ -109,4 +109,9 @@ function do_stuff(req,res){
 
 app.get('/', handle_facebook_request);
 app.get('/test', do_stuff);
+app.get('/testpost', function(req,res){
+  req.facebook.post('/me/feed', {message:'test test'},function(data){
+   res.send(require('util').inspect(data));
+  });
+});
 app.post('/', handle_facebook_request);

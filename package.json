@@ -8,7 +8,8 @@
     "async":     "0.1.18",
     "ejs":       "0.4.3",
     "express":   "2.5.8",
-    "faceplate": "0.0.4"
+    "faceplate": "0.0.4",
+    "facebook-client": ">= 1.6.0"
   },
 
   "engines": {
