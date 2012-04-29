@@ -19,13 +19,15 @@ function fbPostMessage(msg) {
 	});
 }
 
-function fbPostComment(post_id, msg, req) {
-	req.facebook.post(
-		post_id + '/comments',
-		{message: msg},
-		function (data) {
-			console.log('fbPostComment: ' + data);
-		});
+function fbPostComment(post_id, msg) {
+	facebook(function (facebook) {
+		facebook.post(
+			post_id + '/comments',
+			{message: msg},
+			function (data) {
+				console.log('fbPostComment: ' + data);
+			});
+	});
 }
 
 function facebook(callback) {
@@ -34,7 +36,30 @@ function facebook(callback) {
 	});
 }
 
+function contains() {
+	console.log('contains args', arguments);
+	var text = arguments[0].toUpperCase();
+	for (var i = 1; i < arguments.length; i++) {
+		var filters = arguments[i];
+		var found = false;
+		for (var j = 0; j < filters.length; j++) {
+			var filter = filters[j].toUpperCase();
+			if (text.indexOf(filter) != -1) {
+				found = true;
+				break;
+			}
+		};
+		
+		if (!found) {
+			return false;
+		}
+	};
+	
+	return true;
+}
+
 exports.fbPostMessage = fbPostMessage;
 exports.fbPostComment = fbPostComment;
 exports.facebook = facebook;
 exports.faceplateOptions = faceplateOptions;
+exports.contains = contains;

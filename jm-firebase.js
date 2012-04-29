@@ -3,6 +3,7 @@ var Firebase = require('./firebase-node');
 var ENDPOINT = 'http://gamma.firebase.com/jmwong/';
 
 var USERS_LOCATION = 'users';
+var POSTS_LOCATION = 'posts';
 
 
 
@@ -47,11 +48,40 @@ var users = function(){
     
 }
 
+var posts = function(){
+	var db = new Firebase(ENDPOINT);   
+	console.log(db);
+	var ref = db.child(POSTS_LOCATION);
+
+
+	this.setLatestTime = function(time){
+		console.log("ADDING Latest Time");
+		console.log(time);
+		
+		ref.child('latest').set(time);
+	};
+
+	this.getLatestTime = function(callback){
+		ref.child('latest').once('value', function(snapshot){
+			var val = snapshot.val();
+			var exists = (val !== null);
+			callback(val);
+		});
+	}
+	
+	this.isPostOld = function(post, callback) {
+		ref.child('old').child(post.id).once('value', function (snapshot) {
+			var exists = (snapshot.val() !== null);
+			callback(post, exists);
+		});
+	}
+	
+	this.setPostOld = function(post) {
+		ref.child('old').child(post.id).set('true');
+	}
+
+    return this;
+}
+
 module.exports.users = users;
-
-
-
-
-
-
-
+module.exports.posts = posts;

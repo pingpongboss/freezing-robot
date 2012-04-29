@@ -2,6 +2,7 @@ var async   = require('async');
 var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
+var posts    = require('./jm-firebase.js').posts();
 
 var rest = require('restler');
 
@@ -113,19 +114,51 @@ function do_stuff(req, res){
 }
 
 //Process user posts and take actions as necessary
-function processUserPost(text){
-  console.log("[processing post] " + text)
-  switch (text)
-  {
-    case 'How is my usage?': 
-      helper.fbPostMessage('Using 256 kWh');
-      break;
-    case 'hello': 
-      helper.fbPostMessage('I am here');
-      break;
-
-    default:  
-       //nothing
+function processUserPost(postId, text){
+  console.log('[processing post] '+postId+': ' + text)
+  
+  if (helper.contains(text, ['hello', 'hi'])) {
+    helper.fbPostComment(postId, 'Sup. I am alive.');
+  }
+  // querying
+  else if (helper.contains(text, ['how', 'what'])) {
+    if (helper.contains(text, ['usage', 'energy'])) {
+      helper.fbPostComment(postId, 'You are currently using 256 kWh.');
+    } else if (helper.contains(text, ['light'])) {
+      helper.fbPostComment(postId, '4 out of 7 lights are currently turned on.');
+    } else if (helper.contains(text, ['therm', 'temp', 'hot', 'cold'])) {
+      helper.fbPostComment(postId, 'Thermostat is currently set to 68 degrees.');
+    }
+  }
+  // turn off things
+  else if (helper.contains(text, ['close', 'off', 'shut', 'down', 'lower', 'decrease'])) {
+    if (helper.contains(text, ['refrigerator', 'fridge'])) {
+      helper.fbPostComment(postId, 'Shutting off the refrigerator.');
+    } else if (helper.contains(text, ['light'])) {
+      helper.fbPostComment(postId, 'Turning off the light.');
+    } else if (helper.contains(text, ['therm', 'temp'])) {
+      var newTemp = text.match(/\d+/);
+      var to = '';
+      if (newTemp) {
+        to = ' to '+newTemp[0]+' degrees';
+      }
+      helper.fbPostComment(postId, 'Lowering thermostat temperature'+to+'.');
+    }
+  }
+  // turn on things
+  else if (helper.contains(text, ['open', 'on', 'start', 'up', 'increase'])) {
+    if (helper.contains(text, ['refrigerator', 'fridge'])) {
+      helper.fbPostComment(postId, 'Starting the refrigerator.');
+    } else if (helper.contains(text, ['light'])) {
+      helper.fbPostComment(postId, 'Turning on the light.');
+    } else if (helper.contains(text, ['therm', 'temp'])) {
+      var newTemp = text.match(/\d+/);
+      var to = '';
+      if (newTemp) {
+        to = ' to '+newTemp[0]+' degrees';
+      }
+      helper.fbPostComment(postId, 'Raising thermostat temperature'+to+'.');
+    }
   }
 }
 
@@ -159,9 +192,9 @@ function start_loop(req, res){
       ,{
         object        : 'user',
         fields        : 'feed',
-        callback_url  : req.headers['host']+'/update',
+        callback_url  : req.headers['host']+'/webhooks/facebook',
         verify_token  : 'test',
-        access_token  : '301282389949117|1HW0Hd79t50X9wx05jbgkf-TO5g'
+        access_token  : '290427237712179|oNvo-XthhLpgvEG0XAGYhZvrhbM'
       }
       ,function (data) {
         console.log(data);
@@ -184,13 +217,37 @@ function handle_subscription_verification(req, res) {
 
 function handle_subscription_update(req, res) {
   console.log('handle_subscription_update');
-  if (req.body && req.body.entry) {
-    for (var i = 0; i < req.body.entry.length; i++) {
-      var entry = req.body.entry[i];
-      console.log("[facebook hook]" + entry);
-    };
+  if (req.body && req.body.entry && req.body.entry.length) {
+    // get the latest
+    var entry = req.body.entry[0];
+    console.log("[facebook hook]", entry);
+    posts.getLatestTime(function (lastLatestTime) {
+      posts.setLatestTime(entry.time);
+      helper.facebook(function (facebook) {
+        facebook.get('/me/feed', {since: lastLatestTime, limit: 4}, function(data) {
+          for (var i = 0; i < data.length; i++) {
+            var post = data[i];
+            posts.isPostOld(post, function (post, exists) {
+              if (!exists) {
+                processUserPost(post.id, post.message);
+                posts.setPostOld(post);
+              }
+            });
+          };
+        });
+      });
+    });
   }
   res.send();
+}
+
+function testfeed(req, res) {
+  req.facebook.get('/me/feed', {
+    since: '1335714106',
+  } ,function(data) {
+    console.log(data);
+    res.send(data);
+  });
 }
 
 app.get('/', handle_facebook_request);
@@ -210,6 +267,7 @@ app.get('/testpostback', function(req, res){
 app.post('/', handle_facebook_request);
 app.get('/webhooks/facebook', handle_subscription_verification);
 app.post('/webhooks/facebook', handle_subscription_update);
+
 
 function generate_uid(){
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -320,3 +378,6 @@ $url = $connectURL;
    
 
 });
+
+app.get('/testfeed', testfeed);
+
