@@ -106,6 +106,16 @@ function do_stuff(req, res){
   });
 }
 
+//Process user posts and take actions as necessary
+function processUserPost(text){
+	
+}
+
+//Process data coming back from Tendril API
+function processTendrilMetering(data){
+	
+}
+
 var started = false;
 var timeout = 5 * 1000;
 var counter = 0;
