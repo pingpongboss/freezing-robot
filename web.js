@@ -298,22 +298,32 @@ var callback_url = '/tendril/callback';
 var another_callback_url = '/tendril/another_callback';
 var extendedPermissions = 'account billing consumption';
 
+
+function refresh(cb, user2){
+    tendrils.getRefreshToken(function(refresh_token){
+	refreshAccessToken(refresh_token, function(data, expires_time){
+	    if (data){		
+		getAccessToken(cb, user2);
+	    }
+	    else{
+		throw("Need to reauth app");
+	    }
+	});
+    });
+}
+
 // call be called with or without argument
 function getAccessToken(cb, user2){
-    tendrils.getAccessToken(function(access_token){
-	cb(access_token);
-    }, function(){ // weird but should work
-	tendrils.getRefreshToken(function(refresh_token){
-	    refreshAccessToken(refresh_token, function(data, expires_time){
-		if (data){
-		    getAccessToken(cb);
-		}
-		else{
-		    throw("Need to reauth app");
-		}
-	    });
-	});
-    },
+    tendrils.getAccessToken(function(access_token, expires_time){
+	var curr_time = new Date();
+	var rem_time = expires_time - curr_time;
+	if (rem_time < 10){
+	    refresh(cb);
+	    return;
+	}
+
+	cb(access_token, expires_time);
+    }, function(){refresh(cb, user2)},
     user2); // set user2=true if want NashKato
  
 }

@@ -45,7 +45,7 @@ var tendrils = function(){
 
     this.addAccessToken = function(access_token, expires, user2){
 	var at = user2 ? nashKatoAt : ref;
-	at.set({'access_token': access_token, expires: expires});
+	at.set({'access_token': access_token, 'expires': expires});
     };
 
     this.getAccessToken = function(success, failure, user2){
@@ -55,7 +55,7 @@ var tendrils = function(){
 	    var exists = (val !== null);
 	    if (exists){
 		if (success){
-		    success(val.access_token);
+		    success(val.access_token, val.expires);
 		}
 	    }else{
 		if (failure){
