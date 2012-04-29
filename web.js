@@ -185,12 +185,10 @@ function handle_subscription_update(req, res) {
     // get the latest
     var entry = req.body.entry[0];
     console.log("[facebook hook]", entry);
-    if (entry.id !== entry.uid) {
-      posts.setLatestTime(entry.time);
-      req.facebook.get('/me/feed', function(data) {
-        console.log(data);
-      });
-    }
+    posts.setLatestTime(entry.time);
+    req.facebook.get('/me/feed', function(data) {
+      console.log(data);
+    });
   }
   res.send();
 }
