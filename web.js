@@ -3,6 +3,7 @@ var express = require('express');
 var util = require('util');
 var helper = require('./helper.js');
 var posts = require('./jm-firebase.js').posts();
+var tendrils = require('./jm-firebase.js').tendrils();
 var rest = require('restler');
 
 
@@ -277,6 +278,10 @@ function generate_uid() {
     });
 }
 
+function setTendrilSession(req){
+    
+}
+
 var app_key = 'b258166257d8d16c0ff8005bf6e61aeb';
 var app_secret = '12ac4b5f60df625040f3b6e525604bb5';
 var connect_url = 'https://dev.tendrilinc.com';
@@ -285,28 +290,94 @@ var authorize_url = 'https://dev.tendrilinc.com/oauth/authorize';
 var access_token_url = 'https://dev.tendrilinc.com/oauth/access_token';
 var callback_url = '/tendril/callback';
 var another_callback_url = '/tendril/another_callback';
+var extendedPermissions = 'account billing consumption';
+// call be called with or without argument
+function getAccessToken(cb){
+    tendrils.getAccessToken(function(access_token){
+	cb(access_token);
+    }, function(){ // weird but should work
+	refreshAccessToken(function(data, expires_time){
+	    if (data){
+		getAccessToken(cb);
+	    }
+	    else{
+		throw("Need to reauth app");
+	    }
+	});
+    });
+ 
+}
 
 app.get('/tendril/another_callback', function (req, res) {
-    var url = connect_url + '/connect/user/current-user';
+    getAccessToken(function(access_token){
+	var url = connect_url + '/connect/user/current-user';
+	
+	var headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Access_Token': access_token// req.session.access_token
+	};
+	
+	rest.get(url, {
+            headers: headers
+	}).on('complete', function (data) {
+            res.send(data);
+	});
+    });
+
+});
+
+function refreshAccessToken(cb){
+    var url = access_token_url;
 
     var headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Access_Token': req.session.access_token
+    };
+ 
+    var data = {
+	'grant_type'      : 'refresh_token',
+	'refresh_token'   : req.session.refresh_token,
+	'scope'           : extendedPermissions
     };
 
     rest.get(url, {
-        headers: headers
-    }).on('complete', function (data) {
-        res.send(data);
-    });
+	query: data,
+	headers: headers
+    }).on('complete', function(data){
+	var date = new Date();
+        var expires_time = new Date(date.getTime() + parseInt(data.expires_in)*1000);      
+	tendrils.addRefreshToken(data.refresh_token);
+	tendrils.addAccessToken(data.access_token, expires_time);
 
+	cb(data, expires_time);
+    });
+}
+
+app.get('/tendril/refresh', function(req,res){
+    refreshAccessToken(function(data, expires_time){
+	
+        req.session.access_token = data.access_token;
+	req.session.expires_in = data.expires_in;
+
+	req.session.expires_time = expires_time;
+
+        req.session.token_type = data.token_type;      
+        req.session.refresh_token = data.refresh_token;
+
+
+        req.session.scope = data.scope;
+        req.session.loggedin = true;
+
+        res.redirect('http://' + req.headers['host'] + another_callback_url, 303);
+    });
 });
 
 app.get('/tendril/callback', function (req, res) {
     if (!req.query.code) {
         res.send('No code!');
     }
+    
 
     req.session.code = req.query.code;
     req.session.check_state = req.query.state;
@@ -332,17 +403,27 @@ app.get('/tendril/callback', function (req, res) {
     }).on('complete', function (data) {
 
         req.session.access_token = data.access_token;
+	req.session.expires_in = data.expires_in;
+
+	var date = new Date();
+        var expires_time = new Date(date.getTime() + parseInt(data.expires_in)*1000);
+
+        req.session.expires_time = expires_time;
+
+	tendrils.addAccessToken(data.access_token, expires_time);
+
         req.session.token_type = data.token_type;
-        req.session.expires_in = data.expires_in;
+       
         req.session.refresh_token = data.refresh_token;
+
+	tendrils.addRefreshToken(data.refresh_token);
+
         req.session.scope = data.scope;
 
         req.session.loggedin = true;
 
-        var date = new Date();
-        var expires_time = date + parseInt(data.expires_in);
+   
 
-        req.session.expires_time = expires_time;
 
         res.redirect('http://' + req.headers['host'] + another_callback_url, 303);
     });
@@ -351,7 +432,7 @@ app.get('/tendril/callback', function (req, res) {
 app.get('/tendril/auth', function (req, res) {
 
 
-    var extendedPermissions = 'account billing consumption';
+  
     req.session.authorize_state = generate_uid();
 
     var auth_url = authorize_url + '?response_type=code' + '&client_id=' + app_key + '&redirect_uri=' + 'http://' + req.headers['host'] + callback_url + '&scope=' + extendedPermissions + '&state=' + req.session.authorize_state;

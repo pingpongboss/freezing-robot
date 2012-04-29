@@ -2,10 +2,63 @@ var Firebase = require('./firebase-node');
 
 var ENDPOINT = 'http://gamma.firebase.com/jmwong/';
 
+var TENDRILS_LOCATION = 'tendrils';
+
 var USERS_LOCATION = 'users';
 var POSTS_LOCATION = 'posts';
 
 
+var tendrils = function(){
+    var db = new Firebase(ENDPOINT);
+    var tendrilsRoot = db.child(TENDRILS_LOCATION);
+
+    var ref = tendrilsRoot.child('access_token');
+
+    var codeRef = tendrilsRoot.child('code');
+
+    this.addRefreshToken = function(refresh_token){
+	codeRef.set({refresh_token: refresh_token});
+    };
+    
+    this.getRefreshToken = function(success, failure){
+	codeRef.once('value', function(snapshot){
+	    var val = snapshot.val();
+	    var exists = (val !== null);
+	    if (exists){
+		if (success){
+		    success(val);
+		}
+	    }else{
+		if (failure){
+		    failure(val);
+		}
+	    }
+	});
+    };
+
+
+    this.addAccessToken = function(access_token, expires){
+	ref.set({'access_token': access_token, expires: expires});
+    };
+
+    this.getAccessToken = function(success, failure){
+	ref.once('value', function(snapshot){
+	    var val = snapshot.val();
+	    var exists = (val !== null);
+	    if (exists){
+		if (success){
+		    success(val.access_token);
+		}
+	    }else{
+		if (failure){
+		    failure(val);
+		}
+	    }
+	});
+    };
+
+    return this;
+}
 
 var users = function () {
 	var db = new Firebase(ENDPOINT);
@@ -86,3 +139,4 @@ var posts = function () {
 
 module.exports.users = users;
 module.exports.posts = posts;
+module.exports.tendrils = tendrils;
