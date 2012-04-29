@@ -321,7 +321,7 @@ function getAccessToken(cb, user2){
 
 app.get('/tendril/another_callback', function (req, res) {
     var url = connect_url + '/connect/user/current-user';
-    helper.tendrilGet(url, null, function (data) {
+    helper.tendrilGet(url, null, false, function (data) {
         res.send(data);
     });
 });
@@ -439,7 +439,7 @@ app.get('/tendril/callback', function (req, res) {
         client_secret: app_secret
     }
     
-    helper.tendrilGet(url, data, function (data) {
+    helper.tendrilGet(url, data, false, function (data) {
         req.session.access_token = data.access_token;
         req.session.expires_in = data.expires_in;
 
