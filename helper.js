@@ -10,9 +10,9 @@ function fbPostMessage(msg, req) {
 
 exports.fbPostMessage = fbPostMessage;
 
-function fbPostComment(post, msg, req) {
+function fbPostComment(post_id, msg, req) {
 	req.facebook.post(
-		'/me/feed',
+		post_id + '/comments',
 		{message: msg},
 		function (data) {
 			console.log('fbPostComment: ' + data);
