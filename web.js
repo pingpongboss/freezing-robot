@@ -3,6 +3,8 @@ var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
 
+var appId = process.env.FACEBOOK_APP_ID || '301282389949117';
+var secret = process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619';
 // create an express webserver
 var app = express.createServer(
   express.logger(),
@@ -12,8 +14,8 @@ var app = express.createServer(
   // set this to a secret value to encrypt session cookies
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
   require('./lib/faceplate').middleware({
-    app_id: process.env.FACEBOOK_APP_ID || '301282389949117',
-    secret: process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619',
+    app_id: appId,
+    secret: secret,
     scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
   })
 );
@@ -111,9 +113,10 @@ var timeout = 5 * 1000;
 var counter = 0;
 function main_loop(req) {
   console.log(++counter);
-  helper.fbPostMessage('test ' + counter, req);
   
   // pull data from tendril
+  // decision tree
+  // post to fb wall
   
   setTimeout(function() {main_loop(req)}, timeout);
 }
@@ -123,10 +126,33 @@ function start_loop(req, res){
     res.send('Error: Main loop already started.');
     return;
   }
+    
+  req.facebook.post(
+    '/'+appId+'/subscriptions'
+    ,{
+      object        : 'user',
+      fields        : 'feed',
+      callback_url  : req.headers['host']+'/update',
+      verify_token  : 'test',
+      access_token  : '301282389949117|1HW0Hd79t50X9wx05jbgkf-TO5g'
+    }
+    ,function (data) {
+      console.log(data);
+    });
   
   setTimeout(function() {main_loop(req)}, 0);
   started = true;
   res.send('Success: Main loop started.');
+}
+
+function handle_subscription_verification(req, res) {
+  console.log('handle_subscription_verification');
+  res.send();
+}
+
+function handle_subscription_update(req, res) {
+  console.log('handle_subscription_update');
+  res.send();
 }
 
 
@@ -135,5 +161,8 @@ app.get('/test', do_stuff);
 app.get('/start', start_loop);
 app.get('/testpost', function(req, res){
   helper.fbPostMessage('test test', req);
+  res.send('sent');
 });
 app.post('/', handle_facebook_request);
+app.get('/update', handle_subscription_verification);
+app.post('/update', handle_subscription_update);
