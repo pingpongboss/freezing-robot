@@ -13,7 +13,7 @@ var app = express.createServer(
   require('faceplate').middleware({
     app_id: process.env.FACEBOOK_APP_ID,
     secret: process.env.FACEBOOK_SECRET,
-    scope:  'user_likes,user_photos,user_photo_video_tags'
+    scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
   })
 );
 
@@ -99,5 +99,14 @@ function handle_facebook_request(req, res) {
   }
 }
 
+
+function do_stuff(){
+  req.facebook.get('/me/', { }, function(data) {
+    res.send(require('util').inspect(data));
+  });
+}
+
+
 app.get('/', handle_facebook_request);
+app.get('/test', do_stuff);
 app.post('/', handle_facebook_request);
