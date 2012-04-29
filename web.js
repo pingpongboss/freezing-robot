@@ -2,9 +2,11 @@ var async   = require('async');
 var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
+var firebase = require('./lib/firebase-node');
 
 var appId = process.env.FACEBOOK_APP_ID || '301282389949117';
 var secret = process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619';
+
 // create an express webserver
 var app = express.createServer(
   express.logger(),
@@ -16,8 +18,10 @@ var app = express.createServer(
   require('./lib/faceplate').middleware({
     app_id: appId,
     secret: secret,
+    extend_access_token: true,
     scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
   })
+    
 );
 
 // listen to the PORT given to us in the environment
@@ -106,6 +110,16 @@ function do_stuff(req, res){
   req.facebook.get('/me/', { }, function(data) {
     res.send(require('util').inspect(data));
   });
+}
+
+//Process user posts and take actions as necessary
+function processUserPost(text){
+	
+}
+
+//Process data coming back from Tendril API
+function processTendrilMetering(data){
+	
 }
 
 var started = false;
