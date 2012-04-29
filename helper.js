@@ -61,7 +61,7 @@ function twitterPostMessage(msg, callback) {
 }
 
 // call be called with or without argument
-function getAccessToken(cb){
+function getAccessToken(cb, user2){
 	tendrils.getAccessToken(function(access_token){
 		cb(access_token);
     }, function(){ // weird but should work
@@ -72,12 +72,14 @@ function getAccessToken(cb){
     		else{
     			throw("Need to reauth app");
     		}
-    	});
-    });    
+    	}
+    	, user2);
+    }
+    , user2);    
 }
 
 // TODO jamin get rid of req
-function tendrilGet(url, query, callback) {
+function tendrilGet(url, query, user2, callback) {
 	getAccessToken(function(access_token){
 		var headers = {
 			'Accept': 'application/json',
@@ -91,11 +93,11 @@ function tendrilGet(url, query, callback) {
 		}).on('complete', function (data) {
 			callback(data);
 		});
-	});
+	}
+	, user);
 }
 
-// TODO jamin get rid of req
-function tendrilPostXML(url, query, data, callback) {
+function tendrilPostXML(url, query, data, user2, callback) {
 	getAccessToken(function(access_token){
 		var headers = {
 			'Accept': 'application/xml',
@@ -110,7 +112,8 @@ function tendrilPostXML(url, query, data, callback) {
 		}).on('complete', function (data) {
 			callback(data);
 		});
-	});
+	}
+	, user);
 }
 
 function contains() {
@@ -151,12 +154,14 @@ function manageLight(on, callback) {
 		'https://dev.tendrilinc.com/connect/device-action'
 		, null
 		, data
+		, false
 		, function (data) {
             // parse XML
             var requestId = data.match(/requestId=".+"/)[0].split('"')[1];
             
             tendrilGet('https://dev.tendrilinc.com/connect/device-action/'+requestId
             	, null
+            	, false
             	, function (data) {
             		callback(data);
             	});
