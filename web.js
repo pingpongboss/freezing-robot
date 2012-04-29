@@ -113,8 +113,8 @@ function do_stuff(req, res){
 function processUserPost(postId, text){
   console.log('[processing post] '+postId+': ' + text)
   
-  if (helper.match(text, ['usage'], ['how', 'what'])) {
-    helper.fbPostComment(postId, 'Using 256 kWh');
+  if (helper.match(text, ['usage', 'energy'], ['how', 'what'])) {
+    helper.fbPostComment(postId, 'You are currently using 256 kWh.');
   } else if (helper.match(text, ['hello', 'hi'])) {
     helper.fbPostComment(postId, 'Sup. I am alive.');
   } else if (helper.match(text, ['close', 'off', 'shutdown', 'shut down'])) {
