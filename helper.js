@@ -141,7 +141,7 @@ function manageLight(on, callback) {
     </data> \
     </setVoltDataRequest>';
 
-    helper.tendrilPost(
+    tendrilPost(
         'https://dev.tendrilinc.com/connect/device-action'
         , null
         , data
@@ -149,7 +149,7 @@ function manageLight(on, callback) {
             // parse XML
             var requestId = data.match(/requestId=".+"/)[0].split('"')[1];
             
-            helper.tendrilGet('https://dev.tendrilinc.com/connect/device-action/'+requestId
+            tendrilGet('https://dev.tendrilinc.com/connect/device-action/'+requestId
                 , null
                 , function (data) {
                     callback(data);
