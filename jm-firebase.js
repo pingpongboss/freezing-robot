@@ -64,7 +64,7 @@ var posts = function(){
 	};
 
 	this.getLatestTime = function(callback){
-		ref.once('latest', function(snapshot){
+		ref.child('latest').once('value', function(snapshot){
 			var val = snapshot.val();
 			var exists = (val !== null);
 			callback(val);
