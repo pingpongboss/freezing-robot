@@ -127,7 +127,7 @@ function contains() {
 			var filter = filters[j].toUpperCase();
 			for (var k = 0; k < textArray.length; k++) {
 			    var textArrayElement = textArray[k];
-			    if (textArrayElement === filter) {
+			    if (textArrayElement.indexOf(filter) == 0) {
     				found = true;
     				break;
     			}
