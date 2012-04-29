@@ -180,14 +180,16 @@ function handle_subscription_verification(req, res) {
 }
 
 function handle_subscription_update(req, res) {
-  console.log('handle_subscription_update');
+  console.log('handle_subscription_update', req);
   if (req.body && req.body.entry && req.body.entry.length) {
     // get the latest
     var entry = req.body.entry[0];
     console.log("[facebook hook]", entry);
     posts.setLatestTime(entry.time);
-    req.facebook.get('/me/feed', function(data) {
-      console.log(data);
+    helper.facebook(function (facebook) {
+      facebook.get('/me/feed', function(data) {
+        console.log(data);
+      });
     });
   }
   res.send();
