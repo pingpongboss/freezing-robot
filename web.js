@@ -155,9 +155,9 @@ function start_loop(req, res){
       ,{
         object        : 'user',
         fields        : 'feed',
-        callback_url  : req.headers['host']+'/update',
+        callback_url  : req.headers['host']+'/webhooks/facebook',
         verify_token  : 'test',
-        access_token  : '301282389949117|1HW0Hd79t50X9wx05jbgkf-TO5g'
+        access_token  : '290427237712179|oNvo-XthhLpgvEG0XAGYhZvrhbM'
       }
       ,function (data) {
         console.log(data);
