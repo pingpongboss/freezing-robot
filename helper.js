@@ -50,6 +50,7 @@ function facebook(callback) {
 function isFamily (fromId, callback) {
 	facebook(function (facebook) {
 		facebook.get('/me/family', function (data) {
+			console.log(typeof data, data);
 			var result = JSON.parse(data);
 			for (var i = 0; i < result.data.length; i++) {
 				var member = result.data[i];
