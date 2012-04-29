@@ -107,8 +107,21 @@ function do_stuff(req, res){
 }
 
 //Process user posts and take actions as necessary
-function processUserPost(text){
-	
+function processUserPost(text, req){
+  console.log("[processing post] " + text)
+  switch (text)
+  {
+    case 'How is my usage?': 
+      helper.fbPostMessage('Using 256 kWh', req);
+      break;
+    case 'hello': 
+      helper.fbPostMessage('I am here', req);
+      break;
+
+    default:  
+       //nothing
+  } 
+  
 }
 
 //Process data coming back from Tendril API
@@ -146,4 +159,9 @@ app.get('/start', start_loop);
 app.get('/testpost', function(req, res){
   helper.fbPostMessage('test test', req);
 });
+app.get('/testpostback', function(req, res){
+  processUserPost(req.query.input, req);
+  res.send('Got it!');
+});
+
 app.post('/', handle_facebook_request);
