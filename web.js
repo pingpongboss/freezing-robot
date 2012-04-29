@@ -162,7 +162,9 @@ function start_loop(req, res){
 
 function handle_subscription_verification(req, res) {
   console.log('handle_subscription_verification');
-  res.send();
+  if (req.params['hub.verify_token'] == 'test') {
+    res.send(req.params['hub.challenge']);
+  }
 }
 
 function handle_subscription_update(req, res) {
