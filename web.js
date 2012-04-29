@@ -138,7 +138,7 @@ function processUserPost(postId, text){
       if (newTemp) {
         to = ' to '+newTemp[0]+' degrees';
       }
-      helper.fbPostComment(postId, 'Raising thermostat temperature'+to+'.');
+      helper.fbPostComment(postId, 'Lowering thermostat temperature'+to+'.');
     }
   }
   // turn on things
@@ -153,7 +153,7 @@ function processUserPost(postId, text){
       if (newTemp) {
         to = ' to '+newTemp[0]+' degrees';
       }
-      helper.fbPostComment(postId, 'Lowering thermostat temperature'+to+'.');
+      helper.fbPostComment(postId, 'Raising thermostat temperature'+to+'.');
     }
   }
 }

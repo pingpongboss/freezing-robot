@@ -37,7 +37,7 @@ function facebook(callback) {
 }
 
 function contains() {
-	console.log(arguments);
+	console.log('contains args', arguments);
 	var text = arguments[0].toUpperCase();
 	for (var i = 1; i < arguments.length; i++) {
 		var filters = arguments[i];
