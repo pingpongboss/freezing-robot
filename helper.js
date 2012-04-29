@@ -9,3 +9,14 @@ function fbPostMessage(msg, req) {
 }
 
 exports.fbPostMessage = fbPostMessage;
+
+function fbPostComment(post, msg, req) {
+	req.facebook.post(
+		'/me/feed',
+		{message: msg},
+		function (data) {
+			console.log('fbPostComment: ' + data);
+		});
+}
+
+exports.fbPostComment = fbPostComment;
