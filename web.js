@@ -196,6 +196,7 @@ function handle_subscription_update(req, res) {
   res.send();
 }
 
+// example of how to use it without a browser session
 app.get('/testnonbrowser', function(req,res){
     var nonbrowser = require('./lib/faceplate').nonbrowser(faceplateOptions);
     var fbId = '100003794911765';
@@ -208,7 +209,7 @@ app.get('/testnonbrowser', function(req,res){
 
 app.get('/', handle_facebook_request);
 app.get('/test', do_stuff);
-// example of how to use it without a browser session
+
 
 app.get('/start', start_loop);
 app.get('/testpost', function(req, res){
