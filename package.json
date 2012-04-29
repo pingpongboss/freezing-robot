@@ -10,7 +10,8 @@
     "express":   "2.5.8",
     "faceplate": "0.0.4",
     "facebook-client": ">= 1.6.0",
-    "faye-websocket": ">= 0.4.2"	
+    "faye-websocket": ">= 0.4.2",
+    "twitter-node": "0.0.2"
   },
 
   "engines": {
