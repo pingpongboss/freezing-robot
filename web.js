@@ -121,7 +121,7 @@ function handle_facebook_request(req, res) {
 //Process user posts and take actions as necessary
 function processUserPost(post) {
     var postId = post.id;
-    var text = post.message;
+    var text = post.message.toUpperCase().replace('MCFRIDGE', '');
     var fromId = post.from.id;
     console.log('[processing post] ', postId, text, fromId);
     
