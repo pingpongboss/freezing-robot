@@ -9,6 +9,7 @@ var POSTS_LOCATION = 'posts';
 
 
 var tendrils = function(){
+
     var db = new Firebase(ENDPOINT);
     var tendrilsRoot = db.child(TENDRILS_LOCATION);
 

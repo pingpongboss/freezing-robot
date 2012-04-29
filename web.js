@@ -11,6 +11,18 @@ var rest = require('restler');
 var appId = '290427237712179';
 var secret = '372ddf9dbff0853030a779f9db26c072';
 
+// var Twit = require('twit');
+// var T = new Twit({
+//     consumer_key:         'NmCRPoeyNoV3xGyck5jeIA'
+//     , consumer_secret:      'F3IkEmtrNCGfH5E3858MU7BOforCKxTK5TESOD0Zs'
+//     , access_token:         '566262754-OG3H23OMQCauPJAfXjmQS8JVwVOzvvcRwZHX6Hom'
+//     , access_token_secret:  '8ZxYxglKfZwJ0oe90UU02qXXLlglEcJNQ7vClZbYQ'
+// });
+// T.post('statuses/update', { status: 'testing' }, function(err, reply) {
+//   console.log('twitterPostMessage: ', err, reply);
+// });
+
+
 // create an express webserver
 var app = express.createServer(
     express.logger(), express.static(__dirname + '/public'), express.bodyParser(), express.cookieParser(),
@@ -101,66 +113,72 @@ function handle_facebook_request(req, res) {
             render_page(req, res);
         });
 
-} else {
-    render_page(req, res);
-}
-}
-
-function do_stuff(req, res) {
-    helper.facebook(function (facebook) {
-        facebook.get('/me/', {}, function (data) {
-            res.send(require('util').inspect(data));
-        });
-    });
+    } else {
+        render_page(req, res);
+    }
 }
 
 //Process user posts and take actions as necessary
-function processUserPost(postId, text) {
-    console.log('[processing post] ' + postId + ': ' + text)
-
-    if (helper.contains(text, ['hello', 'hi'])) {
-        helper.fbPostComment(postId, 'Sup. I am alive.');
-    }
-    // querying
-    else if (helper.contains(text, ['how', 'what'])) {
-        if (helper.contains(text, ['usage', 'energy'])) {
-            helper.fbPostComment(postId, 'You are currently using 256 kWh.');
-        } else if (helper.contains(text, ['light'])) {
-            helper.fbPostComment(postId, '4 out of 7 lights are currently turned on.');
-        } else if (helper.contains(text, ['therm', 'temp', 'hot', 'cold'])) {
-            helper.fbPostComment(postId, 'Thermostat is currently set to 68 degrees.');
-        }
-    }
-    // turn off things
-    else if (helper.contains(text, ['close', 'off', 'shut', 'down', 'lower', 'decrease', 'cool'])) {
-        if (helper.contains(text, ['refrigerator', 'fridge'])) {
-            helper.fbPostComment(postId, 'Shutting off the refrigerator.');
-        } else if (helper.contains(text, ['light'])) {
-            helper.fbPostComment(postId, 'Turning off the light.');
-        } else if (helper.contains(text, ['therm', 'temp'])) {
-            var newTemp = text.match(/\d+/);
-            var to = '';
-            if (newTemp) {
-                to = ' to ' + newTemp[0] + ' degrees';
+function processUserPost(post) {
+    var postId = post.id;
+    var text = post.message;
+    var fromId = post.from.id;
+    console.log('[processing post] ', postId, text, fromId);
+    
+    helper.isFamily(fromId, function (isFamily) {
+        console.log('isFamily', isFamily);
+        if (isFamily) {
+            if (helper.contains(text, ['hello', 'hi'])) {
+                helper.fbPostComment(postId, 'Sup. I am alive.');
             }
-            helper.fbPostComment(postId, 'Lowering thermostat temperature' + to + '.');
-        }
-    }
-    // turn on things
-    else if (helper.contains(text, ['open', 'on', 'start', 'up', 'increase', 'heat'])) {
-        if (helper.contains(text, ['refrigerator', 'fridge'])) {
-            helper.fbPostComment(postId, 'Starting the refrigerator.');
-        } else if (helper.contains(text, ['light'])) {
-            helper.fbPostComment(postId, 'Turning on the light.');
-        } else if (helper.contains(text, ['therm', 'temp'])) {
-            var newTemp = text.match(/\d+/);
-            var to = '';
-            if (newTemp) {
-                to = ' to ' + newTemp[0] + ' degrees';
+            // querying
+            else if (helper.contains(text, ['how', 'what'])) {
+                if (helper.contains(text, ['usage', 'energy'])) {
+                    helper.fbPostComment(postId, 'You are currently using 256 kWh.');
+                } else if (helper.contains(text, ['light'])) {
+                    helper.fbPostComment(postId, '4 out of 7 lights are currently turned on.');
+                } else if (helper.contains(text, ['therm', 'temp', 'hot', 'cold'])) {
+                    helper.fbPostComment(postId, 'Thermostat is currently set to 68 degrees.');
+                }
             }
-            helper.fbPostComment(postId, 'Raising thermostat temperature' + to + '.');
+            // turn off things
+            else if (helper.contains(text, ['close', 'off', 'shut', 'down', 'lower', 'decrease', 'cool'])) {
+                if (helper.contains(text, ['refrigerator', 'fridge'])) {
+                    helper.fbPostComment(postId, 'Shutting off the refrigerator.');
+                } else if (helper.contains(text, ['light'])) {
+                    helper.manageLight(false, function (data) {
+                        console.log(data);
+                        helper.fbPostComment(postId, 'Turning off the light.');
+                    });
+                } else if (helper.contains(text, ['therm', 'temp'])) {
+                    var newTemp = text.match(/\d+/);
+                    var to = '';
+                    if (newTemp) {
+                        to = ' to ' + newTemp[0] + ' degrees';
+                    }
+                    helper.fbPostComment(postId, 'Lowering thermostat temperature' + to + '.');
+                }
+            }
+            // turn on things
+            else if (helper.contains(text, ['open', 'on', 'start', 'up', 'increase', 'heat'])) {
+                if (helper.contains(text, ['refrigerator', 'fridge'])) {
+                    helper.fbPostComment(postId, 'Starting the refrigerator.');
+                } else if (helper.contains(text, ['light'])) {
+                    helper.manageLight(true, function (data) {
+                        console.log(data);
+                        helper.fbPostComment(postId, 'Turning on the light.');
+                    });
+                } else if (helper.contains(text, ['therm', 'temp'])) {
+                    var newTemp = text.match(/\d+/);
+                    var to = '';
+                    if (newTemp) {
+                        to = ' to ' + newTemp[0] + ' degrees';
+                    }
+                    helper.fbPostComment(postId, 'Raising thermostat temperature' + to + '.');
+                }
+            }
         }
-    }
+    });
 }
 
 //Process data coming back from Tendril API
@@ -230,7 +248,7 @@ function handle_subscription_update(req, res) {
                         var post = data[i];
                         posts.isPostOld(post, function (post, exists) {
                             if (!exists) {
-                                processUserPost(post.id, post.message);
+                                processUserPost(post);
                                 posts.setPostOld(post);
                             }
                         });
@@ -242,18 +260,33 @@ function handle_subscription_update(req, res) {
     res.send();
 }
 
-function testfeed(req, res) {
-    req.facebook.get('/me/feed', {
-        since: '1335714106',
-    }, function (data) {
-        console.log(data);
-        res.send(data);
-    });
+function test(req, res) {
+    var deviceId='804f58aaaaaa0358';
+    var action = 'On';
+    var data = '<?xml version="1.0" encoding="UTF-8"?> \
+    <setVoltDataRequest deviceId="'+deviceId+'" locationId="62" xmlns="http://platform.tendrilinc.com/tnop/extension/ems"> \
+    <data> \
+    <mode>'+action+'</mode> \
+    </data> \
+    </setVoltDataRequest>';
+
+    helper.tendrilPost(
+        'https://dev.tendrilinc.com/connect/device-action'
+        , null
+        , data
+        , function (data) {
+            // parse XML
+            var requestId = data.match(/requestId=".+"/)[0].split('"')[1];
+            
+            helper.tendrilGet('https://dev.tendrilinc.com/connect/device-action/'+requestId
+                , null
+                , function (data) {
+                    res.send(data);
+                });
+        });
 }
 
 app.get('/', handle_facebook_request);
-app.get('/test', do_stuff);
-
 
 app.get('/start', start_loop);
 app.get('/testpost', function (req, res) {
@@ -278,10 +311,6 @@ function generate_uid() {
     });
 }
 
-function setTendrilSession(req){
-    
-}
-
 var app_key = 'b258166257d8d16c0ff8005bf6e61aeb';
 var app_secret = '12ac4b5f60df625040f3b6e525604bb5';
 var connect_url = 'https://dev.tendrilinc.com';
@@ -291,6 +320,7 @@ var access_token_url = 'https://dev.tendrilinc.com/oauth/access_token';
 var callback_url = '/tendril/callback';
 var another_callback_url = '/tendril/another_callback';
 var extendedPermissions = 'account billing consumption';
+
 // call be called with or without argument
 function getAccessToken(cb){
     tendrils.getAccessToken(function(access_token){
@@ -310,23 +340,12 @@ function getAccessToken(cb){
  
 }
 
-app.get('/tendril/another_callback', function (req, res) {
-    getAccessToken(function(access_token){
-	var url = connect_url + '/connect/user/current-user';
-	
-	var headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Access_Token': access_token// req.session.access_token
-	};
-	
-	rest.get(url, {
-            headers: headers
-	}).on('complete', function (data) {
-            res.send(data);
-	});
-    });
 
+app.get('/tendril/another_callback', function (req, res) {
+    var url = connect_url + '/connect/user/current-user';
+    helper.tendrilGet(url, null, function (data) {
+        res.send(data);
+    });
 });
 
 tendrilUsers = {
@@ -379,13 +398,9 @@ function tendrilAuth(user, req, res){ // req, res optional
 
 function refreshAccessToken(refresh_token, cb, user2){
     var url = access_token_url;
-
-    var headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    };
  
     var data = {
+
 	'grant_type'      : 'refresh_token',
 	'refresh_token'   : refresh_token,
 	'scope'           : extendedPermissions
@@ -400,17 +415,21 @@ function refreshAccessToken(refresh_token, cb, user2){
 	tendrils.addRefreshToken(data.refresh_token, user2);
 	tendrils.addAccessToken(data.access_token, expires_time, user2);
 
-	cb(data, expires_time);
+
+        cb(data, expires_time);
+        
+        res.send();
     });
 }
 
 app.get('/tendril/refresh', function(req,res){
+
     refreshAccessToken(req.session.refresh_token, function(data, expires_time){
 	
         req.session.access_token = data.access_token;
-	req.session.expires_in = data.expires_in;
+        req.session.expires_in = data.expires_in;
 
-	req.session.expires_time = expires_time;
+        req.session.expires_time = expires_time;
 
         req.session.token_type = data.token_type;      
         req.session.refresh_token = data.refresh_token;
@@ -434,11 +453,6 @@ app.get('/tendril/callback', function (req, res) {
 
     var url = access_token_url;
 
-    var headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
-
     var data = {
         grant_type: 'authorization_code',
         code: req.session.code,
@@ -446,52 +460,41 @@ app.get('/tendril/callback', function (req, res) {
         client_id: app_key,
         client_secret: app_secret
     }
-
-    rest.get(url, {
-        query: data,
-        headers: headers
-    }).on('complete', function (data) {
-
+    
+    helper.tendrilGet(url, data, function (data) {
         req.session.access_token = data.access_token;
-	req.session.expires_in = data.expires_in;
+        req.session.expires_in = data.expires_in;
 
-	var date = new Date();
+        var date = new Date();
         var expires_time = new Date(date.getTime() + parseInt(data.expires_in)*1000);
 
         req.session.expires_time = expires_time;
 
-	tendrils.addAccessToken(data.access_token, expires_time);
+        tendrils.addAccessToken(data.access_token, expires_time);
 
         req.session.token_type = data.token_type;
-       
+        
         req.session.refresh_token = data.refresh_token;
 
-	tendrils.addRefreshToken(data.refresh_token);
+        tendrils.addRefreshToken(data.refresh_token);
 
         req.session.scope = data.scope;
 
         req.session.loggedin = true;
-
-   
-
-
+        
         res.redirect('http://' + req.headers['host'] + another_callback_url, 303);
     });
 });
 
 app.get('/tendril/auth', function (req, res) {
-
-
-  
     req.session.authorize_state = generate_uid();
-
     var auth_url = authorize_url + '?response_type=code' + '&client_id=' + app_key + '&redirect_uri=' + 'http://' + req.headers['host'] + callback_url + '&scope=' + extendedPermissions + '&state=' + req.session.authorize_state;
-
     res.redirect(auth_url);
 });
 
 app.get('/tendril/auth2', function(req,res){
     tendrilAuth('NashKato', req, res);
+
 });
 
-app.get('/testfeed', testfeed);
+app.get('/test', test);
