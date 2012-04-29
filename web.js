@@ -2,10 +2,9 @@ var async   = require('async');
 var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
-var TwitterNode = require('twitter-node').TwitterNode;
 
-var appId = process.env.FACEBOOK_APP_ID || '301282389949117';
-var secret = process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619';
+var appId = '290427237712179';
+var secret = '372ddf9dbff0853030a779f9db26c072';
 
 // create an express webserver
 var app = express.createServer(
@@ -20,7 +19,7 @@ var app = express.createServer(
 );
 
 // listen to the PORT given to us in the environment
-var port = process.env.PORT || 3000;
+var port = 3000;
 
 app.listen(port, function() {
   console.log("Listening on " + port);
@@ -57,45 +56,6 @@ function render_page(req, res) {
     });
   });
 }
-
-var twit = new TwitterNode({
-  user: 'iamfridge', 
-  password: 'tendril',
-  // host: 'my_proxy.my_company.com',         // proxy server name or ip addr
-  // port: 8080,                              // proxy port!
-  track: ['baseball', 'football'],         // sports!
-  follow: [326332309],                  // follow these random users
-  locations: [-122.75, 36.8, -121.75, 37.8] // tweets in SF
-});
-
-console.log('before');
-twit
-  .addListener('tweet', function(tweet) {
-    console.log("NEW TWEET");
-    console.log("@" + tweet.user.screen_name + ": " + tweet.text);
-  })
-
-  .addListener('limit', function(limit) {
-    console.log("LIMIT: " + util.inspect(limit));
-  })
-
-  .addListener('delete', function(del) {
-    console.log("DELETE: " + util.inspect(del));
-  })
-
-  .addListener('end', function(resp) {
-    console.log("wave goodbye... " + resp.statusCode);
-  })
-
-  .stream();
-console.log('after');
-
-// //
-// //  tweet 'hello world!'
-// //
-// T.post('statuses/update', { status: 'hello world2!' }, function(err, reply) {
-//   console.log('post', reply);
-// });
 
 
 function handle_facebook_request(req, res) {

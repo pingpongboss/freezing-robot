@@ -1,8 +1,8 @@
 var faceplateOptions = {
     extend_access_token: true,
     persist_access_token: true,
-    app_id: process.env.FACEBOOK_APP_ID || '301282389949117',
-    secret: process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619',
+    app_id: '290427237712179',
+    secret: '372ddf9dbff0853030a779f9db26c072',
     scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
 };
 var nonbrowser = require('./lib/faceplate').nonbrowser(faceplateOptions);
