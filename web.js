@@ -1,6 +1,7 @@
 var async   = require('async');
 var express = require('express');
 var util    = require('util');
+var helper    = require('./helper.js');
 
 // create an express webserver
 var app = express.createServer(
@@ -108,12 +109,13 @@ function do_stuff(req, res){
 var started = false;
 var timeout = 5 * 1000;
 var counter = 0;
-function main_loop() {
+function main_loop(req) {
   console.log(++counter);
+  helper.fbPostMessage('test ' + counter, req);
   
   // pull data from tendril
   
-  setTimeout(main_loop, timeout);
+  setTimeout(function() {main_loop(req)}, timeout);
 }
 
 function start_loop(req, res){
@@ -122,7 +124,7 @@ function start_loop(req, res){
     return;
   }
   
-  setTimeout(main_loop, 0);
+  setTimeout(function() {main_loop(req)}, 0);
   started = true;
   res.send('Success: Main loop started.');
 }
@@ -131,9 +133,7 @@ function start_loop(req, res){
 app.get('/', handle_facebook_request);
 app.get('/test', do_stuff);
 app.get('/start', start_loop);
-app.get('/testpost', function(req,res){
-  req.facebook.post('/me/feed', {message:'test test'},function(data){
-   res.send(require('util').inspect(data));
-  });
+app.get('/testpost', function(req, res){
+  helper.fbPostMessage('test test', req);
 });
 app.post('/', handle_facebook_request);
