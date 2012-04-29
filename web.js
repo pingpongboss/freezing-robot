@@ -246,9 +246,31 @@ function handle_subscription_update(req, res) {
 }
 
 function test(req, res) {
-    helper.twitterPostMessage('i am alive again', function (data) {
-        res.send(data);
-    });
+    var deviceId='804f58aaaaaa0358';
+    var action = 'On';
+    var data = '<?xml version="1.0" encoding="UTF-8"?> \
+    <setVoltDataRequest deviceId="'+deviceId+'" locationId="62" xmlns="http://platform.tendrilinc.com/tnop/extension/ems"> \
+    <data> \
+    <mode>'+action+'</mode> \
+    </data> \
+    </setVoltDataRequest>';
+
+    helper.tendrilPost(
+        'https://dev.tendrilinc.com/connect/device-action'
+        , null
+        , data
+        , req
+        , function (data) {
+            // parse XML
+            var requestId = data.match(/requestId=".+"/)[0].split('"')[1];
+            
+            helper.tendrilGet('https://dev.tendrilinc.com/connect/device-action/'+requestId
+                , null
+                , req
+                , function (data) {
+                    res.send(data);
+                });
+        });
 }
 
 app.get('/', handle_facebook_request);

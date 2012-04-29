@@ -69,6 +69,23 @@ function tendrilGet(url, query, req, callback) {
 	});
 }
 
+// TODO jamin get rid of req
+function tendrilPost(url, query, data, req, callback) {
+	var headers = {
+	    'Accept': 'application/xml',
+	    'Content-Type': 'text/xml',
+	    'Access_Token': req.session.access_token
+	};
+
+	rest.post(url, {
+		query: query,
+		data: data,
+	    headers: headers,
+	}).on('complete', function (data) {
+		callback(data);
+	});
+}
+
 function contains() {
 	console.log('contains args', arguments);
 	var text = arguments[0].toUpperCase();
@@ -97,4 +114,5 @@ exports.facebook = facebook;
 exports.faceplateOptions = faceplateOptions;
 exports.twitterPostMessage = twitterPostMessage;
 exports.tendrilGet = tendrilGet;
+exports.tendrilPost = tendrilPost;
 exports.contains = contains;
