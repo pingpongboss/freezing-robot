@@ -2,13 +2,6 @@ var async   = require('async');
 var express = require('express');
 var util    = require('util');
 var helper    = require('./helper.js');
-var faceplateOptions = {
-    extend_access_token: true,
-    persist_access_token: true,
-    app_id: process.env.FACEBOOK_APP_ID || '301282389949117',
-    secret: process.env.FACEBOOK_SECRET || 'edcc1c9ede78eb15bc773fed78602619',
-    scope:  'user_likes,user_photos,user_photo_video_tags,read_stream,publish_stream'
-};
 
 
 var appId = process.env.FACEBOOK_APP_ID || '301282389949117';
@@ -24,7 +17,7 @@ var app = express.createServer(
   express.session({ secret: process.env.SESSION_SECRET || 'secret123' }),
 
 
-  require('./lib/faceplate').middleware(faceplateOptions)
+  require('./lib/faceplate').middleware(helper.faceplateOptions)
     
 );
 
@@ -68,7 +61,6 @@ function render_page(req, res) {
 }
 
 function handle_facebook_request(req, res) {
-
   // if the user is logged in
   if (req.facebook.token) {
 
@@ -111,27 +103,28 @@ function handle_facebook_request(req, res) {
 }
 
 function do_stuff(req, res){
-  req.facebook.get('/me/', { }, function(data) {
-    res.send(require('util').inspect(data));
+  helper.facebook(function (facebook) {
+    facebook.get('/me/', { }, function(data) {
+      res.send(require('util').inspect(data));
+    });
   });
 }
 
 //Process user posts and take actions as necessary
-function processUserPost(text, req){
+function processUserPost(text){
   console.log("[processing post] " + text)
   switch (text)
   {
     case 'How is my usage?': 
-      helper.fbPostMessage('Using 256 kWh', req);
+      helper.fbPostMessage('Using 256 kWh');
       break;
     case 'hello': 
-      helper.fbPostMessage('I am here', req);
+      helper.fbPostMessage('I am here');
       break;
 
     default:  
        //nothing
-  } 
-  
+  }
 }
 
 //Process data coming back from Tendril API
@@ -142,14 +135,14 @@ function processTendrilMetering(data){
 var started = false;
 var timeout = 5 * 1000;
 var counter = 0;
-function main_loop(req) {
+function main_loop() {
   console.log(++counter);
   
   // pull data from tendril
   // decision tree
   // post to fb wall
   
-  setTimeout(function() {main_loop(req)}, timeout);
+  setTimeout(main_loop, timeout);
 }
 
 function start_loop(req, res){
@@ -157,21 +150,23 @@ function start_loop(req, res){
     res.send('Error: Main loop already started.');
     return;
   }
-    
-  req.facebook.post(
-    '/'+appId+'/subscriptions'
-    ,{
-      object        : 'user',
-      fields        : 'feed',
-      callback_url  : req.headers['host']+'/webhooks/facebook',
-      verify_token  : 'test',
-      access_token  : '301282389949117|1HW0Hd79t50X9wx05jbgkf-TO5g'
-    }
-    ,function (data) {
-      console.log(data);
-    });
   
-  setTimeout(function() {main_loop(req)}, 0);
+  helper.facebook(function (facebook) {
+    facebook.post(
+      '/'+appId+'/subscriptions'
+      ,{
+        object        : 'user',
+        fields        : 'feed',
+        callback_url  : req.headers['host']+'/update',
+        verify_token  : 'test',
+        access_token  : '301282389949117|1HW0Hd79t50X9wx05jbgkf-TO5g'
+      }
+      ,function (data) {
+        console.log(data);
+      });
+  });
+  
+  setTimeout(main_loop, 0);
   started = true;
   res.send('Success: Main loop started.');
 }
@@ -198,13 +193,13 @@ function handle_subscription_update(req, res) {
 
 // example of how to use it without a browser session
 app.get('/testnonbrowser', function(req,res){
-    var nonbrowser = require('./lib/faceplate').nonbrowser(faceplateOptions);
-    var fbId = '100003794911765';
-    nonbrowser(fbId, function(facebook){
-	facebook.get('/me', {}, function(data){
-	    res.send(data);
-	})
-    });
+  var nonbrowser = require('./lib/faceplate').nonbrowser(helper.faceplateOptions);
+  var fbId = '100003794911765';
+  nonbrowser(fbId, function(facebook){
+   facebook.get('/me', {}, function(data){
+     res.send(data);
+   })
+ });
 });
 
 app.get('/', handle_facebook_request);
@@ -213,11 +208,11 @@ app.get('/test', do_stuff);
 
 app.get('/start', start_loop);
 app.get('/testpost', function(req, res){
-  helper.fbPostMessage('test test', req);
+  helper.fbPostMessage('test test');
   res.send('sent');
 });
 app.get('/testpostback', function(req, res){
-  processUserPost(req.query.input, req);
+  processUserPost(req.query.input);
   res.send('Got it!');
 });
 
